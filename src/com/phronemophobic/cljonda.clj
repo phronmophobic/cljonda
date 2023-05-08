@@ -22,6 +22,13 @@
       (delete-tree childf silently)))
   (io/delete-file f silently))
 
+(defn relative-path [rootf childf]
+  (let [child-path (.getCanonicalPath childf)
+        root-path (.getAbsolutePath rootf)
+        _ (assert (str/starts-with? child-path root-path))]
+    (subs child-path
+          (inc (count root-path)))))
+
 (defn parse-otool-output [s]
   (let [lines (str/split-lines s)]
     (into #{}
@@ -192,7 +199,8 @@
 
           lib-files
           (into #{}
-                (filter #(str/starts-with? % "lib/"))
+                (comp (filter #(str/starts-with? % "lib/"))
+                      (filter #(str/ends-with? % ".dylib")))
                 (get package "files"))
 
           target-dir (io/file package-build-dir
@@ -220,11 +228,11 @@
       (try
         ;; copy dylibs to the right spot
         (doseq [filename lib-files
-                :let [f (io/file prefix filename)
-                      target-file (io/file target-dir
+                :let [f (io/file prefix filename)]
+                :when (not (Files/isSymbolicLink (.toPath f)))
+                :let [target-file (io/file target-dir
                                            filename)
                       target-path (.getAbsolutePath target-file)]]
-
           (b/copy-file {:src (.getCanonicalPath f)
                         :target target-path}))
 
@@ -238,9 +246,18 @@
               ns-code (list 'ns (package-name->sym package-name)
                             `(:require ~@requires))
 
+
+              package-files (into []
+                                  (map
+                                   (fn [path]
+                                     (let [f (io/file prefix path)]
+                                       {:from (relative-path (io/file prefix)
+                                                       f)
+                                        :link? (Files/isSymbolicLink (.toPath f))
+                                        :to path})))
+                                  lib-files)
               extract-code
-              [`(def ~'package-files
-                  ~lib-files)
+              [`(def ~'package-files ~package-files)
                (list 'extract-lib package-name 'package-files)]]
           (let [ns-filename (str (str/replace package-name #"-" "_") ".clj")
                 src-file (io/file package-build-dir
@@ -298,36 +315,34 @@
         (throw e)
         (println "This release was already deployed.")))))
 
-(defn export-prefix [prefix]
-  (let [installed (conda-installed-packages prefix)
+(defn export-packages [prefix]
+  (let [packages (conda-installed-packages prefix)
         versions (into {}
                        (map (fn [package]
                               [(get package "name")
                                (get package "version")]))
-                       installed)]
+                       packages)]
     (delete-tree build-dir true)
-    (doseq [package installed]
+    (doseq [package packages]
       (println (get package "name"))
       (prn (create-cljonda-jar prefix versions package)))))
 
 
-(def failed-deploys
-  '#{com.phronemophobic.cljonda/icu-macosx-aarch64}
-  )
 
 (defn deploy-prefix [prefix]
   (delete-tree build-dir true)
-  (let [installed (conda-installed-packages prefix)
+  (let [packages (conda-installed-packages prefix)
         versions (into {}
                        (map (fn [package]
                               [(get package "name")
                                (get package "version")]))
-                       installed)
+                       packages)
         deploys (into []
                       (map #(create-cljonda-jar prefix versions %))
-                      installed)]
+                      packages)]
     (doseq [dp deploys
-            :when (not (failed-deploys (:lib dp)))]
+            ;;:when (= 'com.phronemophobic.cljonda/lerc-macosx-aarch64 (:lib dp))
+            ]
       (prn "deploying" dp)
       (deploy dp))))
 
@@ -341,4 +356,20 @@
   ,)
 
 (defn -main [& args]
-  (deploy-prefix prefix))
+  (let []
+    (deploy-prefix "/Users/adrian/miniconda3/envs/cljonda/"))
+  #_(deploy-prefix "/Users/adrian/miniconda3/envs/cljonda-glfw/"))
+
+(comment
+  (export-prefix "/Users/adrian/miniconda3/envs/cljonda-glfw/")
+  (deploy-prefix "/Users/adrian/miniconda3/envs/cljonda-glfw/")
+
+  (export-packages
+   "/Users/adrian/miniconda3/envs/cljonda-ffmpeg/"
+   (conda-installed-packages "/Users/adrian/miniconda3/envs/cljonda-ffmpeg/"))
+
+  (export-packages
+   prefix
+   (conda-installed-packages prefix))
+
+  ,)
