@@ -14,5 +14,5 @@ The idea behind cljonda is to allow conda to do all the hard work of building na
 
 ## License
 
-Copyright 2021 Adrian Smith. Membrane is licensed under Apache License v2.0.
+Copyright 2021 Adrian Smith. Cljonda is licensed under Apache License v2.0.
 
