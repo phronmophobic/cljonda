@@ -15,9 +15,13 @@
  {:test {:extra-paths ["test"]
          :extra-deps {org.clojure/test.check {:mvn/version "1.1.0"}}}
 
-  :build {:deps {io.github.clojure/tools.build {:git/tag "v0.8.3" :git/sha "0d20256"}
-                 slipset/deps-deploy {:mvn/version "RELEASE"}}
-          :ns-default build}
+  :deploy {:main-opts ["-m" "com.phronemophobic.cljonda"]
+           :jvm-opts ["--add-modules" "jdk.incubator.foreign"
+              "--enable-native-access=ALL-UNNAMED"
+              ;; "-Djava.library.path=/Users/adrian/miniconda3/envs/cljonda/lib"
+              ;; "-Djna.library.path=/Users/adrian/miniconda3/envs/cljonda/lib"
+                      ]
+              :jvm-cmd "/Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home/bin/java"}
 
   :project
   {:jvm-opts ["--add-modules" "jdk.incubator.foreign"

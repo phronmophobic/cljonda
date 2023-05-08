@@ -172,6 +172,9 @@
   (str (subs filename 0 (str/index-of filename "."))
        ".dylib"))
 
+(defn system-arch []
+  "macosx-aarch64")
+
 (defn create-cljonda-jar [prefix versions package]
   (let [package-name (get package "name")
         dylibs (into #{}
@@ -193,11 +196,11 @@
                 (get package "files"))
 
           target-dir (io/file package-build-dir
-                               "com"
-                               "phronemophobic"
-                               "cljonda"
-                               package-name
-                               "darwin-aarch64")
+                              "com"
+                              "phronemophobic"
+                              "cljonda"
+                              package-name
+                              "darwin-aarch64")
 
           package-dependencies
           (into []
@@ -262,20 +265,21 @@
                   (prn top-level-form)
                   (println)))))
 
-          (let [lib (symbol "com.phronemophobic.cljonda" package-name)
+          (let [lib (symbol "com.phronemophobic.cljonda" (str package-name "-" (system-arch)))
                 class-dir (.getAbsolutePath package-build-dir)]
             (b/write-pom {:lib lib
                           :version (str (get package "version") "-SNAPSHOT")
                           :class-dir (.getAbsolutePath package-build-dir)
                           :basis {:libs (into '{com.phronemophobic/cljonda-core {:mvn/version "1.0-SNAPSHOT"}}
                                               (map (fn [package-name]
-                                                     [(symbol "com.phronemophobic.cljonda" package-name)
+                                                     [(symbol "com.phronemophobic.cljonda" (str package-name "-" (system-arch)))
                                                       {:mvn/version (str (versions package-name)
                                                                          "-SNAPSHOT")}]))
                                               package-dependencies)}})
             (b/jar {:class-dir class-dir
                     :jar-file (.getAbsolutePath jar-file)})
             {:jar-file (.getAbsolutePath jar-file)
+             :lib lib
              :pom-file (b/pom-path {:lib lib :class-dir class-dir})}))
         
         (finally
@@ -306,6 +310,11 @@
       (println (get package "name"))
       (prn (create-cljonda-jar prefix versions package)))))
 
+
+(def failed-deploys
+  '#{com.phronemophobic.cljonda/icu-macosx-aarch64}
+  )
+
 (defn deploy-prefix [prefix]
   (delete-tree build-dir true)
   (let [installed (conda-installed-packages prefix)
@@ -317,7 +326,10 @@
         deploys (into []
                       (map #(create-cljonda-jar prefix versions %))
                       installed)]
-    deploys))
+    (doseq [dp deploys
+            :when (not (failed-deploys (:lib dp)))]
+      (prn "deploying" dp)
+      (deploy dp))))
 
 (comment
   (create-cljonda-jar prefix
@@ -329,12 +341,4 @@
   ,)
 
 (defn -main [& args]
-  (export-prefix prefix))
-
-
-
-
-
-
-
-
+  (deploy-prefix prefix))
