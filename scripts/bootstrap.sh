@@ -6,6 +6,7 @@ set -x
 #Downloading the latest Miniconda installer for macOS. Your architecture may vary.
 curl https://repo.anaconda.com/miniconda/Miniconda3-latest-$CONDA_PLATFORM-${arch}.sh -o miniconda.sh
 
+chmod 755 ./miniconda.sh
 # silent install
 bash ./miniconda.sh -b
 
