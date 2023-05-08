@@ -18,12 +18,12 @@
          :extra-deps {org.clojure/test.check {:mvn/version "1.1.0"}}}
 
   :deploy {:exec-fn com.phronemophobic.cljonda/deploy
-           :exec-args {:packages ["glfw"]}
+           :exec-args {:packages ["ffmpeg"]}
            :jvm-opts ["--add-modules" "jdk.incubator.foreign"
                       "--enable-native-access=ALL-UNNAMED"]}
 
   :export {:exec-fn com.phronemophobic.cljonda/export
-           :exec-args {:packages ["glfw"]}
+           :exec-args {:packages ["ffmpeg"]}
            :jvm-opts ["--add-modules" "jdk.incubator.foreign"
                       "--enable-native-access=ALL-UNNAMED"]}
   :project
