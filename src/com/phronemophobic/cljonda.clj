@@ -12,7 +12,7 @@
   (:import java.nio.file.Files))
 
 (def build-dir (io/file "build"))
-(def prefix  "/Users/adrian/miniconda3/envs/cljonda")
+
 
 (defn delete-tree
   "Deletes a file or directory."
@@ -83,61 +83,6 @@
                deps))
       deps)))
 
-(comment
-  (def all-dylibs
-    (->> (io/file "/Users/adrian/miniconda3/envs/cljonda/lib/")
-        (.listFiles)
-        
-        (filter #(str/ends-with? (.getName %) ".dylib"))
-        (map #(.getAbsolutePath %))))
-
-  (pprint
-   (into []
-         (map (juxt identity
-                    install-name))
-         all-dylibs))
-
-  (def roots
-    #{"/Users/adrian/miniconda3/envs/cljonda/lib/libexpat.dylib"
-      "/Users/adrian/miniconda3/envs/cljonda/lib/libgd.dylib"
-      "/Users/adrian/miniconda3/envs/cljonda/lib/libpango-1.0.0.dylib"
-      "/Users/adrian/miniconda3/envs/cljonda/lib/libpango-1.0.dylib"
-      "/Users/adrian/miniconda3/envs/cljonda/lib/libpangocairo-1.0.0.dylib"
-      "/Users/adrian/miniconda3/envs/cljonda/lib/libpangocairo-1.0.dylib"
-      "/Users/adrian/miniconda3/envs/cljonda/lib/libgts.dylib"
-      "/Users/adrian/miniconda3/envs/cljonda/lib/libgvc.dylib"})
-
-
-  (def dtree (deps-tree roots))
-  (def ordered (loom.alg/topsort (loom.graph/digraph dtree)))
-
-  (transitive-deps "/Users/adrian/miniconda3/envs/cljonda/lib/libgvc.dylib")
-
-  (require '[com.phronemophobic.clj-graphviz :refer [render-graph]])
-
-  (def real-dylibs
-    (->> ordered
-         (filter #(str/starts-with? %
-                                    "/Users/adrian/miniconda3/envs/cljonda"))
-         (map #(.getCanonicalPath (io/file %)))
-         (distinct)
-         reverse
-         (into [])))
-
-  (def size
-    (transduce (map #(.length (io/file %)))
-               +
-               0
-               real-dylibs))
-
-  (defn filename [s]
-    (-> s
-        io/file
-        .getName))
-
-  
-  ,)
-
 
 (py/initialize! :python-executable "/Users/adrian/miniconda3/envs/cljonda-meta/bin/python"
                   :library-path "/Users/adrian/miniconda3/envs/cljonda-meta/lib/libpython3.11.dylib")
@@ -151,8 +96,6 @@
         solution (py. solver "solve_final_state")]
     (py/->jvm solution)))
 
-
-
 (defn temp-dir []
   (.toFile
    (java.nio.file.Files/createTempDirectory
@@ -161,23 +104,6 @@
 
 (defn package-name->sym [package-name]
   (symbol (str "com.phronemophobic.cljonda." package-name)))
-
-(defn libname->sym [filename]
-  (symbol
-   (-> filename
-       (str/replace #"^lib" "")
-       (str/replace #".dylib" "")
-       (str/replace #"\." "_"))))
-
-(defn normalize-lib-name [filename]
-  (-> filename
-      (str/replace #"^lib" "")
-      (str/replace #".dylib" "")
-      (str/replace #"\..*" "")))
-
-(defn normalize-lib-path [filename]
-  (str (subs filename 0 (str/index-of filename "."))
-       ".dylib"))
 
 (defn system-arch []
   "macosx-aarch64")
@@ -309,7 +235,7 @@
         (throw e)
         (println "This release was already deployed.")))))
 
-(defn export-packages [prefix]
+(defn export-prefix [prefix]
   (let [packages (conda-installed-packages prefix)
         versions (into {}
                        (map (fn [package]
@@ -340,30 +266,26 @@
       (prn "deploying" dp)
       (deploy dp))))
 
+(defn -main [& args]
+  (deploy-prefix "/Users/adrian/miniconda3/envs/cljonda/")
+  #_(export-prefix "/Users/adrian/miniconda3/envs/cljonda/"))
+
 (comment
+
   (create-cljonda-jar prefix
                       (constantly "0.99")
                       (some #(when (= "graphviz"
                                       (get % "name")) %)
                             (conda-installed-packages prefix)))
-  
-  ,)
 
-(defn -main [& args]
-  (let []
-    (deploy-prefix "/Users/adrian/miniconda3/envs/cljonda/"))
-  #_(deploy-prefix "/Users/adrian/miniconda3/envs/cljonda-glfw/"))
+  (def prefix  "/Users/adrian/miniconda3/envs/cljonda")
 
-(comment
   (export-prefix "/Users/adrian/miniconda3/envs/cljonda-glfw/")
   (deploy-prefix "/Users/adrian/miniconda3/envs/cljonda-glfw/")
 
-  (export-packages
-   "/Users/adrian/miniconda3/envs/cljonda-ffmpeg/"
-   (conda-installed-packages "/Users/adrian/miniconda3/envs/cljonda-ffmpeg/"))
+  (export-prefix
+   "/Users/adrian/miniconda3/envs/cljonda-ffmpeg/")
 
-  (export-packages
-   prefix
-   (conda-installed-packages prefix))
+  (export-prefix prefix)
 
   ,)
