@@ -8,13 +8,11 @@ jobs:
     environment: Actions
     strategy:
       matrix:
-        arch: ["x86_64", "arm64"]
-        os: [ubunbu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest]
       fail-fast: false
     runs-on: ${{ matrix.os }}
     env:
       build_type: ${{ matrix.build_type }}
-      arch: ${{ matrix.arch }}
     steps:
       - uses: actions/checkout@v2
       - run: ./scripts/bootstrap.sh

@@ -9,6 +9,8 @@ else
   CONDA_PLATFORM="Linux"
 fi
 
+arch=x86_64
+
 curl https://repo.anaconda.com/miniconda/Miniconda3-latest-$CONDA_PLATFORM-${arch}.sh -o miniconda.sh
 
 head ./miniconda.sh
