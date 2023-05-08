@@ -1,42 +1,42 @@
 (ns com.phronemophobic.cljonda.core
   (:require [clojure.java.io :as io]
             [clojure.string :as str])
-  (:import java.nio.file.Files))
+  (:import java.nio.file.Files
+           java.nio.file.FileAlreadyExistsException))
 
 
-(defn temp-dir []
-  (doto (io/file "/tmp"
-                 "com.phronemophobic.cljonda"
-                 "lib")
-    (.mkdirs)))
+(def temp-dir
+  (io/file "/tmp"
+           "com.phronemophobic.cljonda"))
 
-(defonce library-dir
-  (delay (temp-dir)))
+(def library-dir
+  (io/file temp-dir "lib"))
+
+(defn update-path [prop path]
+  (System/setProperty prop
+                      (if-let [old-path (System/getProperty prop)]
+                        (str old-path ":" path)
+                        path)))
 
 (def init-library-paths
   (delay
-    (let [dir @library-dir
-          new-path (if-let [library-path (System/getProperty "jna.library.path")]
-                     (str library-path ":" (.getAbsolutePath dir))
-                     (.getAbsolutePath dir))]
-      (System/setProperty "jna.library.path" new-path)
-      (System/setProperty "java.library.path"
-                          (str
-                           (System/getProperty "java.library.path")
-                           ":"
-                           (.getAbsolutePath dir))))))
+    (let [lib-path (.getAbsolutePath library-dir)]
+      (update-path "jna.library.path" lib-path)
+      (update-path "java.library.path" lib-path))))
 
 (defn extract-lib [package-name package-files]
   @init-library-paths
-  (let [dir @library-dir
-        empty-attributes (into-array java.nio.file.attribute.FileAttribute [])]
+  (let [empty-attributes (into-array java.nio.file.attribute.FileAttribute [])]
     (doseq [{:keys [from to link?]} package-files
-            :let [dest (io/file dir to)]]
+            :let [dest (io/file temp-dir to)]]
       (.mkdirs (.getParentFile dest))
       (if link?
-        (Files/createSymbolicLink (.toPath dest)
-                                  (.toPath (io/file dir from))
-                                  empty-attributes)
+        (try
+          (Files/createSymbolicLink (.toPath dest)
+                                    (.toPath (io/file temp-dir from))
+                                    empty-attributes)
+          (catch FileAlreadyExistsException e
+            nil))
         ;; copy file
         (let [resource-path (str/join "/"
                                       ["com"

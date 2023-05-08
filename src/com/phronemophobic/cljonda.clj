@@ -183,12 +183,7 @@
   "macosx-aarch64")
 
 (defn create-cljonda-jar [prefix versions package]
-  (let [package-name (get package "name")
-        dylibs (into #{}
-                     (comp (filter #(str/ends-with? % ".dylib"))
-                           (map #(io/file prefix %))
-                           (map #(.getAbsolutePath %)))
-                     (get package "files"))]
+  (let [package-name (get package "name")]
     (let [jar-file (io/file
                     build-dir
                     (str package-name "-" (get package "version") ".jar"))
@@ -199,8 +194,7 @@
 
           lib-files
           (into #{}
-                (comp (filter #(str/starts-with? % "lib/"))
-                      (filter #(str/ends-with? % ".dylib")))
+                (filter #(str/starts-with? % "lib/"))
                 (get package "files"))
 
           target-dir (io/file package-build-dir
