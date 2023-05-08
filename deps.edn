@@ -1,0 +1,33 @@
+{:paths ["src" "resources" "target/classes"]
+ :deps {org.clojure/clojure {:mvn/version "1.11.1"}
+
+        org.clojure/tools.deps.alpha ; add-lib3 branch
+        {:git/url "https://github.com/clojure/tools.deps.alpha"
+         :git/sha "83a477b305839c697666401508c395cfed29506a"}
+
+        slipset/deps-deploy {:mvn/version "RELEASE"}
+        ;; com.phronemophobic/clj-graphviz {:mvn/version "0.5.0"}
+        io.github.clojure/tools.build {:mvn/version "0.9.4"}
+        aysylu/loom {:mvn/version "1.0.2"}
+        clj-python/libpython-clj {:mvn/version "2.024"}
+        cnuernber/dtype-next {:mvn/version "9.033"}}
+ :aliases
+ {:test {:extra-paths ["test"]
+         :extra-deps {org.clojure/test.check {:mvn/version "1.1.0"}}}
+
+  :build {:deps {io.github.clojure/tools.build {:git/tag "v0.8.3" :git/sha "0d20256"}
+                 slipset/deps-deploy {:mvn/version "RELEASE"}}
+          :ns-default build}
+
+  :project
+  {:jvm-opts ["--add-modules" "jdk.incubator.foreign"
+              "--enable-native-access=ALL-UNNAMED"
+              ;; "-Djava.library.path=/Users/adrian/miniconda3/envs/cljonda/lib"
+              ;; "-Djna.library.path=/Users/adrian/miniconda3/envs/cljonda/lib"
+
+              ]
+   :jvm-cmd "/Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home/bin/java"
+   :extra-deps {}
+   }
+
+}}
