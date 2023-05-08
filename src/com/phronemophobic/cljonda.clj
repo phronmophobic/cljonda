@@ -7,6 +7,8 @@
             [clojure.tools.build.api :as b]
             [clojure.java.io :as io]
             [clojure.set :as set]
+            [com.phronemophobic.cljonda.core
+             :as cljonda]
             [clojure.string :as str]
             [clojure.pprint :refer [pprint]])
   (:import java.nio.file.Files))
@@ -94,7 +96,7 @@
 (py/initialize! :python-executable (str (prefix-for-env "cljonda-meta")
                                         "/bin/python")
                 :library-path (str (prefix-for-env "cljonda-meta")
-                                   "lib/libpython3.11.dylib"))
+                                   (str "lib/libpython3.11." (cljonda/shared-lib-suffix))))
 (require '[libpython-clj2.require :refer [require-python]])
 
 (require-python '[conda.api :as conda-api])
@@ -115,8 +117,7 @@
 (defn package-name->sym [package-name]
   (symbol (str "com.phronemophobic.cljonda." package-name)))
 
-(defn system-arch []
-  "macosx-aarch64")
+
 
 (defn create-cljonda-jar [prefix versions package]
   (let [package-name (get package "name")]
@@ -138,7 +139,7 @@
                               "phronemophobic"
                               "cljonda"
                               package-name
-                              "darwin-aarch64")
+                              (cljonda/system-arch))
 
           package-dependencies
           (into []
@@ -182,7 +183,7 @@
                                    (fn [path]
                                      (let [f (io/file prefix path)]
                                        {:from (relative-path (io/file prefix)
-                                                       f)
+                                                             f)
                                         :link? (Files/isSymbolicLink (.toPath f))
                                         :to path})))
                                   lib-files)
@@ -212,14 +213,14 @@
                   (prn top-level-form)
                   (println)))))
 
-          (let [lib (symbol "com.phronemophobic.cljonda" (str package-name "-" (system-arch)))
+          (let [lib (symbol "com.phronemophobic.cljonda" (str package-name "-" (cljonda/system-arch)))
                 class-dir (.getAbsolutePath package-build-dir)]
             (b/write-pom {:lib lib
                           :version (str (get package "version") "-SNAPSHOT")
                           :class-dir (.getAbsolutePath package-build-dir)
                           :basis {:libs (into '{com.phronemophobic/cljonda-core {:mvn/version "1.0-SNAPSHOT"}}
                                               (map (fn [package-name]
-                                                     [(symbol "com.phronemophobic.cljonda" (str package-name "-" (system-arch)))
+                                                     [(symbol "com.phronemophobic.cljonda" (str package-name "-" (cljonda/system-arch)))
                                                       {:mvn/version (str (versions package-name)
                                                                          "-SNAPSHOT")}]))
                                               package-dependencies)}})

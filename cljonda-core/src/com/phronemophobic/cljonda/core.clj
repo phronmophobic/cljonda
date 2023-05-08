@@ -5,6 +5,33 @@
            java.nio.file.FileAlreadyExistsException))
 
 
+(def ^:private system-os*
+  (delay
+    (let [os-name (System/getProperty "os.name")
+          os (if (str/includes? (str/lower-case os-name)
+                                "linux")
+               "linux"
+               "macosx")]
+      os)))
+(def ^:private system-arch*
+  (delay
+    (let [arch-name (System/getProperty "os.arch")]
+      (case arch-name
+        "amd64" "x86-64"
+        "x86_64" "x86-64"
+        "aarch64" "aarch64"
+        "arm64" "arm64"))))
+(def ^:private system*
+  (delay
+    (str @system-os* "-" @system-arch*)))
+(defn system-arch []
+  @system*)
+
+(defn shared-lib-suffix []
+  (case @system-os*
+    "linux" "so"
+    "macosx" "dylib"))
+
 (def temp-dir
   (io/file "/tmp"
            "com.phronemophobic.cljonda"))
@@ -43,7 +70,7 @@
                                        "phronemophobic"
                                        "cljonda"
                                        package-name
-                                       "darwin-aarch64"
+                                       (system-arch)
                                        from])
               resource (io/resource resource-path)]
           (with-open [is (io/input-stream resource)]

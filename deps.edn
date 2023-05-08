@@ -5,6 +5,8 @@
         {:git/url "https://github.com/clojure/tools.deps.alpha"
          :git/sha "83a477b305839c697666401508c395cfed29506a"}
 
+        com.phronemophobic/cljonda-core {:local/root "./cljonda-core"}
+
         slipset/deps-deploy {:mvn/version "RELEASE"}
         ;; com.phronemophobic/clj-graphviz {:mvn/version "0.5.0"}
         io.github.clojure/tools.build {:mvn/version "0.9.4"}
