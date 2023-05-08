@@ -19,7 +19,7 @@ jobs:
       shared_suffix: "dylib"
     steps:
       - uses: actions/checkout@v2
-      - run: ./scripts/bootstrap.
+      - run: ./scripts/bootstrap.sh
       - name: Setup Java
         uses: actions/setup-java@v2
         with:
