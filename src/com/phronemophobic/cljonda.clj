@@ -234,7 +234,7 @@
           #_(delete-tree package-build-dir)
           )))))
 
-(defn deploy [{:keys [jar-file pom-file]}]
+(defn deploy-jar-pom [{:keys [jar-file pom-file]}]
   (try
     (println "deploying" jar-file)
     (deps-deploy.deps-deploy/deploy
@@ -254,48 +254,49 @@
                                (get package "version")]))
                        packages)]
     (delete-tree build-dir true)
-    (doseq [package packages]
-      (println (get package "name"))
-      (prn (create-cljonda-jar prefix versions package)))))
-
-
+    (into []
+          (map #(doto (create-cljonda-jar prefix versions %)
+                  prn))
+          packages)))
 
 (defn deploy-prefix [prefix]
-  (delete-tree build-dir true)
   (let [packages (conda-installed-packages prefix)
         versions (into {}
                        (map (fn [package]
                               [(get package "name")
                                (get package "version")]))
                        packages)
-        deploys (into []
-                      (map #(create-cljonda-jar prefix versions %))
-                      packages)]
-    (doseq [dp deploys
-            ;;:when (= 'com.phronemophobic.cljonda/lerc-macosx-aarch64 (:lib dp))
-            ]
-      (prn "deploying" dp)
-      (deploy dp))))
+        jar-poms (export-prefix prefix)]
+    (prn "exported")
+    (prn jar-poms)
+    (doseq [jar-pom jar-poms]
+      (deploy-jar-pom jar-pom))))
 
 (defn -main [& args]
   (deploy-prefix "/Users/adrian/miniconda3/envs/cljonda/")
   #_(export-prefix "/Users/adrian/miniconda3/envs/cljonda/"))
 
 
-
-(defn export [{:keys [packages]}]
-  (prn packages)
+(defn create-env [env-name packages]
   (let [[stdout stderr ret]
         (apply conda-cli/run_command
                "create"
                "-c" "conda-forge"
-               "-p" (prefix-for-env "cljonda")
+               "-p" (prefix-for-env env-name)
                packages)]
     (println stdout)
     (println stderr)
     (assert (zero? ret)))
-  (prn "created!")
+    (prn "created!"))
+
+(defn export [{:keys [packages]}]
+  (create-env "cljonda" packages)
   (export-prefix (prefix-for-env "cljonda")))
+
+(defn deploy [{:keys [packages]
+               :as opts}]
+  (create-env "cljonda" packages)
+  (deploy-prefix (prefix-for-env "cljonda")))
 
 (comment
 

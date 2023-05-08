@@ -17,15 +17,10 @@
  {:test {:extra-paths ["test"]
          :extra-deps {org.clojure/test.check {:mvn/version "1.1.0"}}}
 
-  :deploy {:main-opts ["-m" "com.phronemophobic.cljonda"]
+  :deploy {:exec-fn com.phronemophobic.cljonda/deploy
+           :exec-args {:packages ["glfw"]}
            :jvm-opts ["--add-modules" "jdk.incubator.foreign"
-              "--enable-native-access=ALL-UNNAMED"
-              ;; "-Djava.library.path=/Users/adrian/miniconda3/envs/cljonda/lib"
-              ;; "-Djna.library.path=/Users/adrian/miniconda3/envs/cljonda/lib"
-                      ]
-              :jvm-cmd "/Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home/bin/java"}
-
-
+                      "--enable-native-access=ALL-UNNAMED"]}
 
   :export {:exec-fn com.phronemophobic.cljonda/export
            :exec-args {:packages ["glfw"]}
