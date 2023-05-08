@@ -117,13 +117,14 @@
 (defn package-name->sym [package-name]
   (symbol (str "com.phronemophobic.cljonda." package-name)))
 
-
+(defn sanitize-version [version]
+  (str/replace version #"[^a-zA-Z0-9+_.]" "_"))
 
 (defn create-cljonda-jar [prefix versions package]
   (let [package-name (get package "name")]
     (let [jar-file (io/file
                     build-dir
-                    (str package-name "-" (get package "version") ".jar"))
+                    (str package-name ".jar"))
 
           package-build-dir
           (doto (io/file build-dir (get package "name"))
@@ -216,12 +217,15 @@
           (let [lib (symbol "com.phronemophobic.cljonda" (str package-name "-" (cljonda/system-arch)))
                 class-dir (.getAbsolutePath package-build-dir)]
             (b/write-pom {:lib lib
-                          :version (str (get package "version") "-SNAPSHOT")
+                          :version (str (sanitize-version
+                                         (get package "version"))
+                                        "-SNAPSHOT")
                           :class-dir (.getAbsolutePath package-build-dir)
                           :basis {:libs (into '{com.phronemophobic/cljonda-core {:mvn/version "1.0-SNAPSHOT"}}
                                               (map (fn [package-name]
                                                      [(symbol "com.phronemophobic.cljonda" (str package-name "-" (cljonda/system-arch)))
-                                                      {:mvn/version (str (versions package-name)
+                                                      {:mvn/version (str (sanitize-version
+                                                                          (versions package-name))
                                                                          "-SNAPSHOT")}]))
                                               package-dependencies)}})
             (b/jar {:class-dir class-dir
