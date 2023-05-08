@@ -16,6 +16,7 @@ jobs:
       CONDA_PLATFORM: MacOSX
       build_type: ${{ matrix.build_type }}
       ARCH: ${{ matrix.arch }}
+      arch: ${{ matrix.arch }}
       shared_suffix: "dylib"
     steps:
       - uses: actions/checkout@v2
