@@ -1,0 +1,83 @@
+name: Deploy
+on:
+  workflow_dispatch:
+
+
+jobs:
+  macos:
+    runs-on: macos-10.15
+    environment: Actions
+    strategy:
+      matrix:
+        arch: ["x86_64", "arm64"]
+      fail-fast: false
+    env:
+      platform: macos
+      CONDA_PLATFORM: MacOSX
+      build_type: ${{ matrix.build_type }}
+      ARCH: ${{ matrix.arch }}
+      shared_suffix: "dylib"
+    steps:
+      - uses: actions/checkout@v2
+      - run: ./scripts/bootstrap.
+      - name: Setup Java
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'temurin' # See 'Supported distributions' for available options
+          java-version: '17'
+      - name: Install clojure tools
+        uses: DeLaGuardo/setup-clojure@3.5
+        with:
+          # Install just one or all simultaneously
+          cli: 1.11.1.1208 # Clojure CLI based on tools.deps
+      - name: Install dependencies
+        run: clojure -P
+      - name: Deploy
+        env:
+          CLOJARS_USERNAME: ${{ secrets.CLOJARS_USERNAME }}
+          CLOJARS_PASSWORD: ${{ secrets.CLOJARS_PASSWORD }}
+        run: clojure -X:export
+
+  # linux:
+  #   runs-on: ubuntu-latest
+  #   environment: Actions
+  #   container: ubuntu:18.04
+  #   strategy:
+  #     matrix:
+  #       arch: ["x86_64" "aarch64"]
+  #     fail-fast: false
+  #   env:
+  #     platform: linux
+  #     conda_platform: MacOSX
+  #     build_type: ${{ matrix.build_type }}
+  #     arch: ${{ matrix.arch }}
+  #     shared_suffix: "so"
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - run: ./csource/check_release.sh
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #     - run: ./csource/prepare_linux.sh
+  #     - run: ./csource/download_skia.sh
+  #     - run: ./csource/compile_linux.sh
+  #     - uses: actions/upload-artifact@v2
+  #       with:
+  #         name: libmembraneskia-${{matrix.arch}}.so
+  #         path: csource/libmembraneskia-${{matrix.arch}}.so
+  #     - run: ./csource/release.sh
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #     - name: Setup Java
+  #       uses: actions/setup-java@v2
+  #       with:
+  #         distribution: 'temurin' # See 'Supported distributions' for available options
+  #         java-version: '11'
+  #     - name: Install clojure tools
+  #       uses: DeLaGuardo/setup-clojure@3.5
+  #       with:
+  #         # Install just one or all simultaneously
+  #         cli: 1.10.1.693 # Clojure CLI based on tools.deps
+  #     - run: python3 ./csource/deploy_clojars.py
+  #       env:
+  #         CLOJARS_USERNAME: ${{ secrets.CLOJARS_USERNAME }}
+  #         CLOJARS_PASSWORD: ${{ secrets.CLOJARS_PASSWORD }}

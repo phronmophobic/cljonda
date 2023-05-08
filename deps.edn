@@ -23,6 +23,12 @@
                       ]
               :jvm-cmd "/Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home/bin/java"}
 
+
+
+  :export {:exec-fn com.phronemophobic.cljonda/export
+           :exec-args {:packages ["glfw"]}
+           :jvm-opts ["--add-modules" "jdk.incubator.foreign"
+                      "--enable-native-access=ALL-UNNAMED"]}
   :project
   {:jvm-opts ["--add-modules" "jdk.incubator.foreign"
               "--enable-native-access=ALL-UNNAMED"

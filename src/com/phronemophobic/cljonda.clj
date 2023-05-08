@@ -29,6 +29,13 @@
     (subs child-path
           (inc (count root-path)))))
 
+(defn prefix-for-env [env-name]
+  (.getAbsolutePath
+   (io/file (System/getProperty "user.home")
+            "miniconda3"
+            "envs"
+            env-name)))
+
 (defn parse-otool-output [s]
   (let [lines (str/split-lines s)]
     (into #{}
@@ -84,11 +91,14 @@
       deps)))
 
 
-(py/initialize! :python-executable "/Users/adrian/miniconda3/envs/cljonda-meta/bin/python"
-                  :library-path "/Users/adrian/miniconda3/envs/cljonda-meta/lib/libpython3.11.dylib")
+(py/initialize! :python-executable (str (prefix-for-env "cljonda-meta")
+                                        "/bin/python")
+                :library-path (str (prefix-for-env "cljonda-meta")
+                                   "lib/libpython3.11.dylib"))
 (require '[libpython-clj2.require :refer [require-python]])
 
 (require-python '[conda.api :as conda-api])
+(require-python '[conda.cli.python_api :as conda-cli])
 
 
 (defn conda-installed-packages [prefix]
@@ -270,6 +280,22 @@
   (deploy-prefix "/Users/adrian/miniconda3/envs/cljonda/")
   #_(export-prefix "/Users/adrian/miniconda3/envs/cljonda/"))
 
+
+
+(defn export [{:keys [packages]}]
+  (prn packages)
+  (let [[stdout stderr ret]
+        (apply conda-cli/run_command
+               "create"
+               "-c" "conda-forge"
+               "-p" (prefix-for-env "cljonda")
+               packages)]
+    (println stdout)
+    (println stderr)
+    (assert (zero? ret)))
+  (prn "created!")
+  (export-prefix (prefix-for-env "cljonda")))
+
 (comment
 
   (create-cljonda-jar prefix
@@ -287,5 +313,14 @@
    "/Users/adrian/miniconda3/envs/cljonda-ffmpeg/")
 
   (export-prefix prefix)
+
+  (py.- conda-cli/Commands "CREATE")
+
+  (def result
+    (let [packages ["libclang"]]
+      (apply conda-cli/run_command "create" "-n" "cljonda" "-c" "conda-forge" packages)))
+
+  
+  run_command("create", "-n", "newenv", "python=3", "flask")
 
   ,)
