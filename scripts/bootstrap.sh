@@ -3,8 +3,15 @@
 set -e
 set -x
 
-#Downloading the latest Miniconda installer for macOS. Your architecture may vary.
+if [[ $(uname) == "Darwin" ]]; then
+  CONDA_PLATFORM="MacOSX"
+else
+  CONDA_PLATFORM="Linux"
+fi
+
 curl https://repo.anaconda.com/miniconda/Miniconda3-latest-$CONDA_PLATFORM-${arch}.sh -o miniconda.sh
+
+head ./miniconda.sh
 
 chmod 755 ./miniconda.sh
 # silent install

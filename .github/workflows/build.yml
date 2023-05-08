@@ -13,11 +13,8 @@ jobs:
       fail-fast: false
     runs-on: ${{ matrix.os }}
     env:
-      platform: macos
-      CONDA_PLATFORM: MacOSX
       build_type: ${{ matrix.build_type }}
       arch: ${{ matrix.arch }}
-      shared_suffix: "dylib"
     steps:
       - uses: actions/checkout@v2
       - run: ./scripts/bootstrap.sh
