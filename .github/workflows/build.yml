@@ -9,7 +9,7 @@ jobs:
     strategy:
       matrix:
         arch: ["x86_64", "arm64"]
-        os: [ubunbu-latest macos-latest]
+        os: [ubunbu-latest, macos-latest]
       fail-fast: false
     runs-on: ${{ matrix.os }}
     env:
