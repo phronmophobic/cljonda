@@ -293,12 +293,22 @@
     (assert (zero? ret)))
     (prn "created!"))
 
+(defn remove-env [env-name]
+  (let [[stdout stderr ret]
+        (conda-cli/run_command
+         "remove"
+         "--all"
+         "-p" (prefix-for-env env-name))]
+    (println stdout)
+    (println stderr)))
+
 (defn export [{:keys [packages]}]
   (create-env "cljonda" packages)
   (export-prefix (prefix-for-env "cljonda")))
 
 (defn deploy [{:keys [packages]
                :as opts}]
+  (remove-env "cljonda")
   (create-env "cljonda" packages)
   (deploy-prefix (prefix-for-env "cljonda")))
 
