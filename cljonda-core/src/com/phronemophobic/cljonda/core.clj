@@ -59,6 +59,7 @@
       (.mkdirs (.getParentFile dest))
       (if link?
         (try
+          (Files/deleteIfExists (.toPath dest))
           (Files/createSymbolicLink (.toPath dest)
                                     (.toPath (io/file temp-dir from))
                                     empty-attributes)
@@ -73,5 +74,6 @@
                                        (system-arch)
                                        from])
               resource (io/resource resource-path)]
-          (with-open [is (io/input-stream resource)]
-            (io/copy is dest)))))))
+          (when resource
+            (with-open [is (io/input-stream resource)]
+              (io/copy is dest))))))))
