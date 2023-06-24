@@ -82,6 +82,8 @@
     (assert (zero? exit))))
 
 (defn prep-libretro [commit]
+  (doto (io/file build-dir)
+    (.mkdirs))
   (let [lib-dir (io/file build-dir "libretro-fceumm")
         lib-path (.getCanonicalPath lib-dir)]
     (when (not (.exists lib-dir))
