@@ -30,7 +30,7 @@
 (defn shared-lib-suffix []
   (case @system-os*
     "linux" "so"
-    "macosx" "dylib"))
+    "darwin" "dylib"))
 
 (def temp-dir
   (io/file "/tmp"
