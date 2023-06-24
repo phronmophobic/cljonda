@@ -114,3 +114,9 @@
                                lib-files)]
     (deploy-jar-pom deploy-info)))
 
+(defn -main [commit]
+  (deploy-libretro commit))
+
+(comment
+  (deploy-libretro "f068818c4d68620c31eca0c02a5891ee3096b645")
+  )
