@@ -1,4 +1,4 @@
-(ns com.phronemophobic.cljonda.libretro_fcueumm
+(ns com.phronemophobic.cljonda.libretro_fceumm
   (:require [clojure.java.shell :as sh]
             [clojure.tools.build.api :as b]
             [clojure.java.io :as io]
