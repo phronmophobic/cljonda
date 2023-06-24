@@ -115,8 +115,12 @@
     (deploy-jar-pom deploy-info)))
 
 (defn -main [commit]
-  (deploy-libretro commit))
+  (try
+    (deploy-libretro commit)
+    (catch Throwable e
+      (println e))))
 
 (comment
   (deploy-libretro "f068818c4d68620c31eca0c02a5891ee3096b645")
+  (-main "f068818c4d68620c31eca0c02a5891ee3096b645")
   )
