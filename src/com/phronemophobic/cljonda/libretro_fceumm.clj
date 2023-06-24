@@ -116,8 +116,8 @@
 
 (defn deploy-libretro [commit]
   (let [lib-files (prep-libretro commit)
-        deploy-info (jar-libretro (str commit "-SNAPSHOT")
-                               lib-files)]
+        deploy-info (jar-libretro commit
+                                  lib-files)]
     (deploy-jar-pom deploy-info)))
 
 (defn -main [commit]
