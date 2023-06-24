@@ -11,7 +11,7 @@
           os (if (str/includes? (str/lower-case os-name)
                                 "linux")
                "linux"
-               "macosx")]
+               "darwin")]
       os)))
 (def ^:private system-arch*
   (delay
