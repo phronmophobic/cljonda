@@ -78,8 +78,14 @@
 
 
 (defn assert-sh [& args]
-  (let [{:keys [exit]} (apply sh/sh args)]
-    (assert (zero? exit))))
+  (let [{:keys [exit out err]} (apply sh/sh args)]
+    (when (not (zero? exit))
+      (throw (ex-info "Shell Command Error"
+                      {:type ::shell-command-error
+                       :exit exit
+                       :args args
+                       :out out
+                       :err err})))))
 
 (defn prep-libretro [commit]
   (doto (io/file build-dir)
@@ -117,8 +123,29 @@
 (defn -main [commit]
   (try
     (deploy-libretro commit)
+    (catch clojure.lang.ExceptionInfo e
+      (let [data (ex-data e)]
+        (case (:type data)
+
+          ::shell-command-error
+          (let [{:keys [exit args out err]} data]
+            (println "args: " (pr-str args))
+            (println "Exit: " exit)
+            (println "---- out -----")
+            (println out)
+            (println "---- err -----")
+            (println err)
+            (println "--------------")
+            (throw e))
+
+          ;; else
+          (println e)
+          (throw e)
+          ))
+      )
     (catch Throwable e
-      (println e))))
+      (println e)
+      (throw e))))
 
 (comment
   (deploy-libretro "f068818c4d68620c31eca0c02a5891ee3096b645")
