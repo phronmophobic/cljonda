@@ -1,4 +1,4 @@
-name: Deploy Libretro
+name: Deploy Libretro fceumm
 on:
   workflow_dispatch:
 
