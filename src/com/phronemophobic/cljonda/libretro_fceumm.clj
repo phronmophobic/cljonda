@@ -103,7 +103,7 @@
       [target-file])))
 
 (defn jar-libretro [version lib-files]
-  (create-cljonda-jar  "com.phronemophobic.cljonda.libretro_fceumm"
+  (create-cljonda-jar  "libretro_fceumm"
                        version
                        lib-files)
 )
