@@ -10,11 +10,21 @@
             [com.phronemophobic.cljonda.core
              :as cljonda]
             [clojure.string :as str]
+            [com.rpl.specter :as specter]
             [clojure.pprint :refer [pprint]])
   (:import java.nio.file.Files))
 
 (def build-dir (io/file "build"))
 
+(defn fix-python-cycles [packages]
+  (->> packages
+       (specter/setval [specter/ALL
+                        (fn [package]
+                          (#{"setuptools" "wheel" "pip"} (get package "name")))
+                        (specter/keypath "depends")
+                        specter/ALL
+                        #(str/starts-with? % "python")]
+                       specter/NONE)))
 
 (defn delete-tree
   "Deletes a file or directory."
@@ -251,7 +261,8 @@
         (println "This release was already deployed.")))))
 
 (defn export-prefix [prefix]
-  (let [packages (conda-installed-packages prefix)
+  (let [packages (-> (conda-installed-packages prefix)
+                     (fix-python-cycles))
         versions (into {}
                        (map (fn [package]
                               [(get package "name")

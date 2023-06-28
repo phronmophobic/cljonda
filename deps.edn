@@ -12,7 +12,8 @@
         io.github.clojure/tools.build {:mvn/version "0.9.4"}
         aysylu/loom {:mvn/version "1.0.2"}
         clj-python/libpython-clj {:mvn/version "2.024"}
-        cnuernber/dtype-next {:mvn/version "9.033"}}
+        cnuernber/dtype-next {:mvn/version "9.033"}
+        com.rpl/specter {:mvn/version "1.1.4"}}
  :aliases
  {:test {:extra-paths ["test"]
          :extra-deps {org.clojure/test.check {:mvn/version "1.1.0"}}}
@@ -21,6 +22,12 @@
            :exec-args {:packages ["ffmpeg==4.4.2"]}
            :jvm-opts ["--add-modules" "jdk.incubator.foreign"
                       "--enable-native-access=ALL-UNNAMED"]}
+
+
+  :deploy-graphviz {:exec-fn com.phronemophobic.cljonda/deploy
+                    :exec-args {:packages ["graphviz==2.50.0"]}
+                    :jvm-opts ["--add-modules" "jdk.incubator.foreign"
+                               "--enable-native-access=ALL-UNNAMED"]}
 
   :export {:exec-fn com.phronemophobic.cljonda/export
            :exec-args {:packages ["ffmpeg==4.4.2"]}

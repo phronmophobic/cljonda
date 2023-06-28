@@ -1,4 +1,4 @@
-name: Deploy
+name: Deploy graphviz
 on:
   workflow_dispatch:
 
@@ -32,5 +32,5 @@ jobs:
         env:
           CLOJARS_USERNAME: ${{ secrets.CLOJARS_USERNAME }}
           CLOJARS_PASSWORD: ${{ secrets.CLOJARS_PASSWORD }}
-        run: clojure -X:deploy
+        run: clojure -X:deploy-graphviz
 
