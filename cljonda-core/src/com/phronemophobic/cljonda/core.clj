@@ -60,7 +60,7 @@
                                                     ["com"
                                                      "phronemophobic"
                                                      "cljonda"
-                                                     (munge package-name)
+                                                     package-name
                                                      (str "package-info-"(system-arch) ".edn")]))
         package-info (with-open [is (io/input-stream package-info-resource)
                                  rdr (io/reader is)

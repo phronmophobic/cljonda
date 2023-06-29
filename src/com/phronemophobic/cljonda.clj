@@ -124,13 +124,13 @@
     "cljonda-"
     (into-array java.nio.file.attribute.FileAttribute []))))
 
-(defn sanitize-ns-name [ns-name]
-  (str/replace ns-name #"[^a-zA-Z0-9+_]" "_"))
+(defn sanitize-package-name [package-name]
+  (-> package-name
+      munge
+      (str/replace #"[^a-zA-Z0-9+_]" "_")))
 
 (defn package-name->sym [package-name]
-  (symbol (str "com.phronemophobic.cljonda." (-> package-name
-                                                 munge
-                                                 sanitize-ns-name))))
+  (symbol (str "com.phronemophobic.cljonda." package-name)))
 
 (defn sanitize-version [version]
   (str/replace version #"[^a-zA-Z0-9+_.]" "_"))
@@ -138,7 +138,7 @@
 (def cljonda-version "0.9.2")
 
 (defn create-cljonda-jar [prefix versions package]
-  (let [package-name (get package "name")]
+  (let [package-name (sanitize-package-name (get package "name"))]
     (let [jar-file (io/file
                     build-dir
                     (str package-name ".jar"))
@@ -188,10 +188,10 @@
         ;; src dir with namespace
         (let [requires
               (into []
-                    (map package-name->sym)
+                    (comp (map sanitize-package-name)
+                          (map package-name->sym))
                     package-dependencies)
               
-              package-name (get package "name")
               ns-code (list 'ns (package-name->sym package-name)
                             ;;`(:require ~@requires)
                             (list :require '[com.phronemophobic.cljonda.core :refer [extract-lib]]))
@@ -217,7 +217,7 @@
                               "com"
                               "phronemophobic"
                               "cljonda"
-                              (munge package-name)
+                              package-name
                               (str "package-info-" (cljonda/system-arch) ".edn"))]
             (.mkdirs (.getParentFile package-file))
             (with-open [w (io/writer package-file)]
@@ -231,7 +231,7 @@
                      :requires requires}))))
 
           ;; generate lib namespace
-          (let [ns-filename (str (munge package-name) ".clj")
+          (let [ns-filename (str package-name ".clj")
                 src-file (io/file package-build-dir
                                   "com"
                                   "phronemophobic"
@@ -254,7 +254,7 @@
                   (prn top-level-form)
                   (println)))))
 
-          (let [lib (symbol "com.phronemophobic.cljonda" (str (munge package-name) "-" (cljonda/system-arch)))
+          (let [lib (symbol "com.phronemophobic.cljonda" (str package-name "-" (cljonda/system-arch)))
                 class-dir (.getAbsolutePath package-build-dir)]
             (b/write-pom {:lib lib
                           :version (str (sanitize-version
@@ -264,9 +264,9 @@
                           :class-dir (.getAbsolutePath package-build-dir)
                           :basis {:libs (into `{com.phronemophobic/cljonda-core {:mvn/version ~cljonda-version}}
                                               (map (fn [package-name]
-                                                     [(symbol "com.phronemophobic.cljonda" (str (munge package-name) "-" (cljonda/system-arch)))
+                                                     [(symbol "com.phronemophobic.cljonda" (str package-name "-" (cljonda/system-arch)))
                                                       {:mvn/version (str (sanitize-version
-                                                                          (versions package-name))
+                                                                          (versions (get package "name")))
                                                                          "-" cljonda-version)}]))
                                               package-dependencies)}})
             (b/jar {:class-dir class-dir
