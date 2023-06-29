@@ -263,11 +263,13 @@
                                         cljonda-version)
                           :class-dir (.getAbsolutePath package-build-dir)
                           :basis {:libs (into `{com.phronemophobic/cljonda-core {:mvn/version ~cljonda-version}}
-                                              (map (fn [package-name]
-                                                     [(symbol "com.phronemophobic.cljonda" (str package-name "-" (cljonda/system-arch)))
-                                                      {:mvn/version (str (sanitize-version
-                                                                          (versions (get package "name")))
-                                                                         "-" cljonda-version)}]))
+                                              (comp
+                                               (map sanitize-package-name)
+                                               (map (fn [package-name]
+                                                      [(symbol "com.phronemophobic.cljonda" (str package-name "-" (cljonda/system-arch)))
+                                                       {:mvn/version (str (sanitize-version
+                                                                           (versions (get package "name")))
+                                                                          "-" cljonda-version)}])))
                                               package-dependencies)}})
             (b/jar {:class-dir class-dir
                     :jar-file (.getAbsolutePath jar-file)})
