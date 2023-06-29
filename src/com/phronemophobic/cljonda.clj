@@ -124,8 +124,13 @@
     "cljonda-"
     (into-array java.nio.file.attribute.FileAttribute []))))
 
+(defn sanitize-ns-name [ns-name]
+  (str/replace ns-name #"[^a-zA-Z0-9+_]" "_"))
+
 (defn package-name->sym [package-name]
-  (symbol (str "com.phronemophobic.cljonda." (munge package-name))))
+  (symbol (str "com.phronemophobic.cljonda." (-> package-name
+                                                 munge
+                                                 sanitize-ns-name))))
 
 (defn sanitize-version [version]
   (str/replace version #"[^a-zA-Z0-9+_.]" "_"))
