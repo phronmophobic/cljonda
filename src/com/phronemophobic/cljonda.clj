@@ -125,7 +125,7 @@
     (into-array java.nio.file.attribute.FileAttribute []))))
 
 (defn package-name->sym [package-name]
-  (symbol (str "com.phronemophobic.cljonda." package-name)))
+  (symbol (str "com.phronemophobic.cljonda." (munge package-name))))
 
 (defn sanitize-version [version]
   (str/replace version #"[^a-zA-Z0-9+_.]" "_"))
@@ -198,10 +198,31 @@
                                         :link? (Files/isSymbolicLink (.toPath f))
                                         :to path})))
                                   lib-files)
+
               extract-code
-              [`(def ~'package-files ~package-files)
-               (list 'extract-lib package-name 'package-files)]]
-          (let [ns-filename (str (str/replace package-name #"-" "_") ".clj")
+              [;; `(def ~'package-files ~package-files)
+               (list 'extract-lib package-name)]]
+
+          ;; write package files
+          (let [package-file (io/file
+                              package-build-dir
+                              "com"
+                              "phronemophobic"
+                              "cljonda"
+                              (munge package-name)
+                              (str "package-files-" (cljonda/system-arch) ".edn"))]
+            (.mkdirs (.getParentFile package-file))
+            (with-open [w (io/writer package-file)]
+              (binding [*out* w
+                        *print-length* nil
+                        *print-level* nil
+                        *print-dup* false
+                        *print-meta* false
+                        *print-readably* true]
+                (pr package-files))))
+
+          ;; generate namespaces
+          (let [ns-filename (str (munge package-name) ".clj")
                 src-file (io/file package-build-dir
                                   "com"
                                   "phronemophobic"
@@ -325,29 +346,8 @@
 
 (comment
 
-  (create-cljonda-jar prefix
-                      (constantly "0.99")
-                      (some #(when (= "graphviz"
-                                      (get % "name")) %)
-                            (conda-installed-packages prefix)))
+  (create-env "cljonda" ["graphviz==2.50.0"])
+  (export-prefix (prefix-for-env "cljonda"))
 
-  (def prefix  "/Users/adrian/miniconda3/envs/cljonda")
-
-  (export-prefix "/Users/adrian/miniconda3/envs/cljonda-glfw/")
-  (deploy-prefix "/Users/adrian/miniconda3/envs/cljonda-glfw/")
-
-  (export-prefix
-   "/Users/adrian/miniconda3/envs/cljonda-ffmpeg/")
-
-  (export-prefix prefix)
-
-  (py.- conda-cli/Commands "CREATE")
-
-  (def result
-    (let [packages ["libclang"]]
-      (apply conda-cli/run_command "create" "-n" "cljonda" "-c" "conda-forge" packages)))
-
-  
-  run_command("create", "-n", "newenv", "python=3", "flask")
 
   ,)

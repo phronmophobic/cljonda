@@ -1,7 +1,9 @@
 (ns com.phronemophobic.cljonda.core
   (:require [clojure.java.io :as io]
+            [clojure.edn :as edn]
             [clojure.string :as str])
-  (:import java.nio.file.Files
+  (:import java.io.PushbackReader
+           java.nio.file.Files
            java.nio.file.FileAlreadyExistsException))
 
 
@@ -51,9 +53,21 @@
       (update-path "jna.library.path" lib-path)
       (update-path "java.library.path" lib-path))))
 
-(defn extract-lib [package-name package-files]
+(defn extract-lib [package-name]
   @init-library-paths
-  (let [empty-attributes (into-array java.nio.file.attribute.FileAttribute [])]
+  (let [package-file-resource (io/resource
+                               (clojure.string/join "/"
+                                                    ["com"
+                                                     "phronemophobic"
+                                                     "cljonda"
+                                                     (munge package-name)
+                                                     (str "package-files-"(system-arch) ".edn")]))
+        package-files (with-open [is (io/input-stream package-file-resource)
+                                  rdr (io/reader is)
+                                  rdr (PushbackReader. rdr)]
+                        (edn/read rdr))
+
+        empty-attributes (into-array java.nio.file.attribute.FileAttribute [])]
     (doseq [{:keys [from to link?]} package-files
             :let [dest (io/file temp-dir to)]]
       (.mkdirs (.getParentFile dest))
