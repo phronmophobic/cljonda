@@ -135,7 +135,7 @@
 (defn sanitize-version [version]
   (str/replace version #"[^a-zA-Z0-9+_.]" "_"))
 
-(def cljonda-version "0.9.3")
+(def cljonda-version "0.9.4")
 
 (defn create-cljonda-jar [prefix versions package]
   (let [package-name (sanitize-package-name (get package "name"))]
