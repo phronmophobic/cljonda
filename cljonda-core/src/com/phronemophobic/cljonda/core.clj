@@ -55,19 +55,24 @@
 
 (defn extract-lib [package-name]
   @init-library-paths
-  (let [package-file-resource (io/resource
+  (let [package-info-resource (io/resource
                                (clojure.string/join "/"
                                                     ["com"
                                                      "phronemophobic"
                                                      "cljonda"
                                                      (munge package-name)
-                                                     (str "package-files-"(system-arch) ".edn")]))
-        package-files (with-open [is (io/input-stream package-file-resource)
-                                  rdr (io/reader is)
-                                  rdr (PushbackReader. rdr)]
-                        (edn/read rdr))
+                                                     (str "package-info-"(system-arch) ".edn")]))
+        package-info (with-open [is (io/input-stream package-info-resource)
+                                 rdr (io/reader is)
+                                 rdr (PushbackReader. rdr)]
+                       (edn/read rdr))
+        package-files (:files package-info)
+        package-requires (:requires package-info)
 
         empty-attributes (into-array java.nio.file.attribute.FileAttribute [])]
+    (doseq [ns-name package-requires]
+      (require ns-name))
+
     (doseq [{:keys [from to link?]} package-files
             :let [dest (io/file temp-dir to)]]
       (.mkdirs (.getParentFile dest))
