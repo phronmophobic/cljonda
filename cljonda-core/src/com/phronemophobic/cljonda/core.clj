@@ -26,6 +26,13 @@
 (def ^:private system*
   (delay
     (str @system-os* "-" @system-arch*)))
+
+(defn os []
+  @system-os*)
+
+(defn arch []
+  @system-arch*)
+
 (defn system-arch []
   @system*)
 
