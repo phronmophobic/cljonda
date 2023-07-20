@@ -136,7 +136,7 @@
 
 (defn deploy-llama [commit]
   (let [lib-files (prep-llama commit)
-        deploy-info (jar-llama (str commit "-SNAPSHOT")
+        deploy-info (jar-llama commit
                                lib-files)]
     (deploy-jar-pom deploy-info)))
 
