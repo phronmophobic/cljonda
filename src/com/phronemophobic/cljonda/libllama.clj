@@ -95,7 +95,9 @@
   (let [lib-dir (io/file build-dir "llama.cpp")
         lib-path (.getCanonicalPath lib-dir)]
     (when (not (.exists lib-dir))
-      (assert-sh "git" "clone" "https://github.com/ggerganov/llama.cpp"
+      (assert-sh "git" "clone"
+                 "https://github.com/phronmophobic/llama.cpp.git"
+                 ;; "https://github.com/ggerganov/llama.cpp"
                  :dir (.getCanonicalPath (io/file lib-dir "../"))))
     
     (assert-sh "git" "checkout" commit
