@@ -8,7 +8,7 @@ if [[ $(uname) == "Darwin" ]]; then
     true
 else
     # linux
-    apt-get update -y
-    apt-get install cmake3 cmake3-data -y
+    sudo apt-get update -y
+    sudo apt-get install cmake3 cmake3-data -y
 fi
 
