@@ -18,6 +18,7 @@ else
     sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-9
     sudo update-alternatives --config gcc 
     sudo apt-get install fontconfig libfontconfig1-dev libglu1-mesa-dev curl zip -y
+    sudo apt install cmake  -y
 
 
 fi
