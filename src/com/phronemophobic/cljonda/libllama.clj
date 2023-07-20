@@ -168,6 +168,6 @@
       (throw e))))
 
 (comment
-  (deploy-llama "294f424554c1599784ac9962462fc39ace92d8a5")
-  (-main "294f424554c1599784ac9962462fc39ace92d8a5")
+  (deploy-llama "e274269fd87aac0f71ab02a2c4676f60fd6198cf")
+  (-main "e274269fd87aac0f71ab02a2c4676f60fd6198cf")
   )
