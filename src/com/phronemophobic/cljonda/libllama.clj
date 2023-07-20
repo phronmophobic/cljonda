@@ -1,4 +1,4 @@
-(ns com.phronemophobic.cljonda.llama
+(ns com.phronemophobic.cljonda.libllama
   (:require [clojure.java.shell :as sh]
             [clojure.tools.build.api :as b]
             [clojure.java.io :as io]
