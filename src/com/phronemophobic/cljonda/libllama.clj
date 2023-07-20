@@ -102,19 +102,21 @@
                :dir lib-path)
 
     (let [cpp-build-dir (doto (io/file lib-dir "build")
-                          (.mkdirs))]
+                          (.mkdirs))
+          env (when (= "darwin" (cljonda/os))
+                {:env {"MACOSX_DEPLOYMENT_TARGET" "10.1"}})]
       (if (= "darwin" (cljonda/os))
         ;; macosx, add metal
         (assert-sh "cmake" "-DLLAMA_METAL=ON" "-DBUILD_SHARED_LIBS=ON" ".."
-                   :env {"MACOSX_DEPLOYMENT_TARGET" "10.1"}
+                   :env env
                    :dir cpp-build-dir)
         ;; linux
         (assert-sh "cmake" "-DBUILD_SHARED_LIBS=ON" ".."
-                   :env {"MACOSX_DEPLOYMENT_TARGET" "10.1"}
+                   :env env
                    :dir cpp-build-dir))
 
       (assert-sh "cmake" "--build" "." "--config" "Release"
-                 :env {"MACOSX_DEPLOYMENT_TARGET" "10.1"}
+                 :env env
                  :dir cpp-build-dir)
       
 
