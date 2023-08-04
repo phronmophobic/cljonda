@@ -34,9 +34,6 @@
 
         target-dir (io/file package-build-dir
                             (cljonda/system-arch))]
-    (do (delete-tree package-build-dir)
-        (.mkdir package-build-dir))
-    
     (try
       ;; copy dylibs to the right spot
       (doseq [f lib-files
@@ -78,6 +75,7 @@
 
 
 (defn assert-sh [& args]
+  (prn "sh" args)
   (let [{:keys [exit out err]} (apply sh/sh args)]
     (when (not (zero? exit))
       (print out)
@@ -89,7 +87,8 @@
                        :out out
                        :err err})))))
 
-(defn prep-llama [commit]
+(defn prep-llama [commit cublas?]
+  (delete-tree build-dir)
   (doto (io/file build-dir)
     (.mkdirs))
   (let [lib-dir (io/file build-dir "llama.cpp")
@@ -113,9 +112,18 @@
                    :env env
                    :dir cpp-build-dir)
         ;; linux
-        (assert-sh "cmake" "-DBUILD_SHARED_LIBS=ON" ".."
-                   :env env
-                   :dir cpp-build-dir))
+        (let [flags ["-DBUILD_SHARED_LIBS=ON"]
+              flags (if cublas?
+                      (conj flags "-DLLAMA_CUBLAS=ON")
+                      flags)
+              args (into []
+                         cat
+                         [["cmake"]
+                          flags
+                          [".."]
+                          [:env env
+                           :dir cpp-build-dir]])]
+          (apply assert-sh args)))
 
       (assert-sh "cmake" "--build" "." "--config" "Release"
                  :env env
@@ -142,7 +150,17 @@
 
 (defn -main [commit]
   (try
-    (deploy-llama commit)
+    (let [cublases (if (= "linux" (cljonda/os))
+                     [true false]
+                     [false])]
+      (doseq [cublas? cublases]
+        (let [lib-files (prep-llama commit cublas?)
+              version (if cublas?
+                        (str "CUBLAS-" commit)
+                        commit)
+              deploy-info (jar-llama version
+                                     lib-files)]
+          (deploy-jar-pom deploy-info))))
     (catch clojure.lang.ExceptionInfo e
       (let [data (ex-data e)]
         (case (:type data)
