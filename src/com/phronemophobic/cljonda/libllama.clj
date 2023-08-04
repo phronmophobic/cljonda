@@ -88,7 +88,7 @@
                        :err err})))))
 
 (defn prep-llama [commit cublas?]
-  (delete-tree build-dir)
+  (delete-tree build-dir true)
   (doto (io/file build-dir)
     (.mkdirs))
   (let [lib-dir (io/file build-dir "llama.cpp")
