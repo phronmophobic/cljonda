@@ -169,5 +169,11 @@
 
 (comment
   (deploy-llama "e274269fd87aac0f71ab02a2c4676f60fd6198cf")
-  (-main "e274269fd87aac0f71ab02a2c4676f60fd6198cf")
+  (-main "6e88a462d7d2d281e33f35c3c41df785ef633bc1")
+
+  (let [commit "6e88a462d7d2d281e33f35c3c41df785ef633bc1"
+        lib-files (prep-llama commit)
+        deploy-info (jar-llama commit
+                               lib-files)]
+    deploy-info)
   )
