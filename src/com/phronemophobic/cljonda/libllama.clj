@@ -150,9 +150,16 @@
 
 (defn -main [commit]
   (try
-    (let [cublases (if (= "linux" (cljonda/os))
-                     [true false]
-                     [false])]
+    (let [cublases [false]
+          ;; compiling with cublas support
+          ;; only works if the nvidia packages are
+          ;; available
+          ;; maybe it's possible to install them and compile
+          ;;  on build box even if the build box
+          ;;  doesn't have a GPU?
+          #_(if (= "linux" (cljonda/os))
+              [true false]
+              [false])]
       (doseq [cublas? cublases]
         (let [lib-files (prep-llama commit cublas?)
               version (if cublas?
