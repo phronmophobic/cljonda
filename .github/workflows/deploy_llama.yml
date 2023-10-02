@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
 
 env:
-  commit: 6e88a462d7d2d281e33f35c3c41df785ef633bc1
+  commit: c3f197912f1ce858ac114d70c40db512de02e2e0
 
 jobs:
   deploy:
@@ -17,7 +17,8 @@ jobs:
       build_type: ${{ matrix.build_type }}
     steps:
       - uses: actions/checkout@v2
-      # - run: ./scripts/bootstrap_llama.sh
+      - name: Install packages
+        run: apt-get update -y && apt-get install patchelf -y
       - name: Setup Java
         uses: actions/setup-java@v2
         with:

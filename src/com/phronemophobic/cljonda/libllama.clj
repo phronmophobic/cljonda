@@ -48,6 +48,9 @@
       (let [lib (symbol "com.phronemophobic.cljonda" (str package-name "-" (cljonda/system-arch)))
             class-dir (.getAbsolutePath package-build-dir)]
         (b/write-pom {:lib lib
+                      :src-pom (-> (io/file "resources"
+                                            "llama-cpp-template-pom.xml")
+                                   (.getCanonicalPath))
                       :version version
                       :class-dir (.getAbsolutePath package-build-dir)
                       :basis {}})
@@ -87,7 +90,7 @@
                        :out out
                        :err err})))))
 
-(defn prep-llama [commit cublas?]
+(defn prep-llama [commit]
   (delete-tree build-dir true)
   (doto (io/file build-dir)
     (.mkdirs))
@@ -108,14 +111,11 @@
                 {:env {"MACOSX_DEPLOYMENT_TARGET" "10.1"}})]
       (if (= "darwin" (cljonda/os))
         ;; macosx, add metal
-        (assert-sh "cmake" "-DLLAMA_METAL=ON" "-DBUILD_SHARED_LIBS=ON" ".."
+        (assert-sh "cmake" "-DBUILD_SHARED_LIBS=ON" ".."
                    :env env
                    :dir cpp-build-dir)
         ;; linux
         (let [flags ["-DBUILD_SHARED_LIBS=ON"]
-              flags (if cublas?
-                      (conj flags "-DLLAMA_CUBLAS=ON")
-                      flags)
               args (into []
                          cat
                          [["cmake"]
@@ -130,14 +130,21 @@
                  :dir cpp-build-dir)
       
 
-      (let [target-file (io/file lib-dir (str "libllama." (cljonda/shared-lib-suffix)))
+      (let [target-file (io/file lib-dir (str "libllama-gguf." (cljonda/shared-lib-suffix)))
             target-path (.getCanonicalPath target-file) ]
         (b/copy-file {:src (.getCanonicalPath (io/file cpp-build-dir (str "libllama." (cljonda/shared-lib-suffix)))) 
                       :target target-path})
+        ;; update install name/so name
+        (if (= "darwin" (cljonda/os))
+          (assert-sh "install_name_tool" "-id" (.getName target-file) (.getName target-file)
+                     :dir (.getParentFile target-file))
+          ;; linux
+          (assert-sh "patchelf" "--set-soname" (.getName target-file) (.getName target-file)
+                     :dir (.getParentFile target-file)))
         [target-file]))))
 
 (defn jar-llama [version lib-files]
-  (create-cljonda-jar  "llama-cpp"
+  (create-cljonda-jar  "llama-cpp-gguf"
                        version
                        lib-files)
 )
@@ -150,24 +157,11 @@
 
 (defn -main [commit]
   (try
-    (let [cublases [false]
-          ;; compiling with cublas support
-          ;; only works if the nvidia packages are
-          ;; available
-          ;; maybe it's possible to install them and compile
-          ;;  on build box even if the build box
-          ;;  doesn't have a GPU?
-          #_(if (= "linux" (cljonda/os))
-              [true false]
-              [false])]
-      (doseq [cublas? cublases]
-        (let [lib-files (prep-llama commit cublas?)
-              version (if cublas?
-                        (str "CUBLAS-" commit)
-                        commit)
-              deploy-info (jar-llama version
-                                     lib-files)]
-          (deploy-jar-pom deploy-info))))
+    (let [lib-files (prep-llama commit)
+          version (str commit "-SNAPSHOT")
+          deploy-info (jar-llama version
+                                 lib-files)]
+      (deploy-jar-pom deploy-info))
     (catch clojure.lang.ExceptionInfo e
       (let [data (ex-data e)]
         (case (:type data)
@@ -193,12 +187,13 @@
       (throw e))))
 
 (comment
-  (deploy-llama "e274269fd87aac0f71ab02a2c4676f60fd6198cf")
-  (-main "6e88a462d7d2d281e33f35c3c41df785ef633bc1")
+  (deploy-llama "c3f197912f1ce858ac114d70c40db512de02e2e0")
+  (-main "c3f197912f1ce858ac114d70c40db512de02e2e0")
 
-  (let [commit "6e88a462d7d2d281e33f35c3c41df785ef633bc1"
-        lib-files (prep-llama commit)
+  (let [commit "c3f197912f1ce858ac114d70c40db512de02e2e0"
+        lib-files (prep-llama commit )
         deploy-info (jar-llama commit
                                lib-files)]
     deploy-info)
+  ,
   )
