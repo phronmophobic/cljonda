@@ -1,0 +1,40 @@
+name: Deploy libclip
+on:
+  workflow_dispatch:
+
+env:
+  commit: "8f348725271db67517de871dea4a4e8a159e664f"
+
+jobs:
+  deploy:
+    environment: Actions
+    strategy:
+      matrix:
+        os: [ubuntu-latest , macos-latest]
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    env:
+      build_type: ${{ matrix.build_type }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install packages
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update -y && sudo apt-get install patchelf -y
+      - name: Setup Java
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'temurin' # See 'Supported distributions' for available options
+          java-version: '17'
+      - name: Install clojure tools
+        uses: DeLaGuardo/setup-clojure@3.5
+        with:
+          # Install just one or all simultaneously
+          cli: 1.11.1.1208 # Clojure CLI based on tools.deps
+      - name: Install dependencies
+        run: clojure -P
+      - name: Deploy
+        env:
+          CLOJARS_USERNAME: ${{ secrets.CLOJARS_USERNAME }}
+          CLOJARS_PASSWORD: ${{ secrets.CLOJARS_PASSWORD }}
+        run: clojure -M:project -m com.phronemophobic.cljonda.libclip ${{ env.commit }}
+
