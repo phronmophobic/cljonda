@@ -99,7 +99,6 @@
     (when (not (.exists lib-dir))
       (assert-sh "git" "clone"
                  "https://github.com/facebookresearch/faiss.git"
-                 ;; "https://github.com/ggerganov/faiss.cpp"
                  :dir (.getCanonicalPath (io/file lib-dir "../"))))
     
     (assert-sh "git" "checkout" commit
@@ -110,9 +109,14 @@
 
     (let [cpp-build-dir lib-dir
           env (when (= "darwin" (cljonda/os))
-                {"MACOSX_DEPLOYMENT_TARGET" "10.1"
-                 "CC" "/opt/local/bin/clang-mp-16"
-                 "CXX" "/opt/local/bin/clang++-mp-16"})
+                (merge
+                 {;; "MACOSX_DEPLOYMENT_TARGET" "10.3.9"
+                  }
+                 (when (= (cljonda/arch) "aarch64")
+                   {"CC" "/opt/local/bin/clang-mp-16"
+                    "CMAKE_C_FLAGS" "-L/opt/local/lib"
+                    "CMAKE_CXX_FLAGS" "-L/opt/local/lib"
+                    "CXX" "/opt/local/bin/clang++-mp-16"})))
           flags ["-DBUILD_SHARED_LIBS=ON"
                  "-DBUILD_TESTING=OFF"
                  "-DFAISS_ENABLE_GPU=OFF"
@@ -150,7 +154,7 @@
             ["faiss"]))))
 
 (defn jar-faiss [version lib-files]
-  (create-cljonda-jar  "faiss-cpp"
+  (create-cljonda-jar  "faiss"
                        version
                        lib-files)
 )
