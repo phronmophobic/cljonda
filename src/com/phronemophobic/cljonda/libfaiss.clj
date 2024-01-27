@@ -120,10 +120,12 @@
                  "-DFAISS_ENABLE_C_API=ON"
                  "-DFAISS_OPT_LEVEL=generic"
                  "-DCMAKE_INSTALL_LIBDIR=lib"
-                 "-DCMAKE_BUILD_TYPE=Release"]]
+                 "-DCMAKE_BUILD_TYPE=Release"
+                 "--install-prefix" (.getCanonicalPath
+                                     (io/file lib-dir "build" "out"))]]
       (let [args (into []
                        cat
-                       [["cmake"]
+                       [["cmake" "-B" "build"]
                         flags
                         ["."]
                         [:env env
