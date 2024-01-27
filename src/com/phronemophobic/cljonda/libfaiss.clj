@@ -135,7 +135,7 @@
       (assert-sh "make" "-C" "build"
                  :env env
                  :dir cpp-build-dir)
-      #_(assert-sh "make" "-C" "build" "install"
+      (assert-sh "make" "-C" "build" "install"
                  :env env
                  :dir cpp-build-dir)
       
