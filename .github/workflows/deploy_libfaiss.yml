@@ -10,7 +10,7 @@ jobs:
     environment: Actions
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, macos-latest]
       fail-fast: false
     runs-on: ${{ matrix.os }}
     env:
