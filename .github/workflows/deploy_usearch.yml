@@ -25,6 +25,7 @@ jobs:
         with:
           distribution: 'temurin' # See 'Supported distributions' for available options
           java-version: '17'
+          architecture: 'aarch64'
       - name: Install clojure tools
         uses: DeLaGuardo/setup-clojure@3.5
         with:
