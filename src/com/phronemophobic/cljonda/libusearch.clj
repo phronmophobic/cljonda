@@ -151,7 +151,8 @@
 (defn -main [commit]
   (try
     (let [lib-files (prep-usearch commit)
-          version (str commit "-SNAPSHOT")
+          version (str commit ;; "-SNAPSHOT"
+                       )
           deploy-info (jar-usearch version
                                  lib-files)]
       (deploy-jar-pom deploy-info))
