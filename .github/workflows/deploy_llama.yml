@@ -3,14 +3,20 @@ on:
   workflow_dispatch:
 
 env:
-  commit: c3f197912f1ce858ac114d70c40db512de02e2e0
+  commit: "6bbd0474c9be6cfbd4330c0f2d4307a4889affbc"
 
 jobs:
   deploy:
     environment: Actions
     strategy:
       matrix:
-        os: [ubuntu-latest , macos-latest]
+        include:
+          - os: "ubuntu-latest"
+            arch: "x64"
+          - os: "macos-14"
+            arch: "aarch64"
+          - os: "macos-latest"
+            arch: "x64"
       fail-fast: false
     runs-on: ${{ matrix.os }}
     env:
@@ -25,6 +31,7 @@ jobs:
         with:
           distribution: 'temurin' # See 'Supported distributions' for available options
           java-version: '17'
+          architecture: ${{ matrix.arch }}
       - name: Install clojure tools
         uses: DeLaGuardo/setup-clojure@3.5
         with:

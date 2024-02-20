@@ -111,7 +111,7 @@
                 {:env {"MACOSX_DEPLOYMENT_TARGET" "10.1"}})]
       (if (= "darwin" (cljonda/os))
         ;; macosx, add metal
-        (assert-sh "cmake" "-DBUILD_SHARED_LIBS=ON" ".."
+        (assert-sh "cmake" "-DBUILD_SHARED_LIBS=ON" "-DLLAMA_METAL_EMBED=ON" ".."
                    :env env
                    :dir cpp-build-dir)
         ;; linux
@@ -158,7 +158,7 @@
 (defn -main [commit]
   (try
     (let [lib-files (prep-llama commit)
-          version commit
+          version (str commit "-SNAPSHOT")
           deploy-info (jar-llama version
                                  lib-files)]
       (deploy-jar-pom deploy-info))
@@ -190,7 +190,7 @@
   (deploy-llama "c3f197912f1ce858ac114d70c40db512de02e2e0")
   (-main "c3f197912f1ce858ac114d70c40db512de02e2e0")
 
-  (let [commit "c3f197912f1ce858ac114d70c40db512de02e2e0"
+  (let [commit "6bbd0474c9be6cfbd4330c0f2d4307a4889affbc"
         lib-files (prep-llama commit )
         deploy-info (jar-llama commit
                                lib-files)]
