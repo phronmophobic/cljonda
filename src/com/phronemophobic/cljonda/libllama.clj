@@ -98,8 +98,8 @@
         lib-path (.getCanonicalPath lib-dir)]
     (when (not (.exists lib-dir))
       (assert-sh "git" "clone"
-                 "https://github.com/phronmophobic/llama.cpp.git"
-                 ;; "https://github.com/ggerganov/llama.cpp"
+                 ;; "https://github.com/phronmophobic/llama.cpp.git"
+                 "https://github.com/ggerganov/llama.cpp"
                  :dir (.getCanonicalPath (io/file lib-dir "../"))))
     
     (assert-sh "git" "checkout" commit
@@ -108,10 +108,10 @@
     (let [cpp-build-dir (doto (io/file lib-dir "build")
                           (.mkdirs))
           env (when (= "darwin" (cljonda/os))
-                {:env {"MACOSX_DEPLOYMENT_TARGET" "10.1"}})]
+                {})]
       (if (= "darwin" (cljonda/os))
         ;; macosx, add metal
-        (assert-sh "cmake" "-DBUILD_SHARED_LIBS=ON" "-DLLAMA_METAL_EMBED=ON" ".."
+        (assert-sh "cmake" "-DBUILD_SHARED_LIBS=ON" "-DLLAMA_METAL_EMBED_LIBRARY=ON" ".."
                    :env env
                    :dir cpp-build-dir)
         ;; linux
@@ -190,7 +190,7 @@
   (deploy-llama "c3f197912f1ce858ac114d70c40db512de02e2e0")
   (-main "c3f197912f1ce858ac114d70c40db512de02e2e0")
 
-  (let [commit "6bbd0474c9be6cfbd4330c0f2d4307a4889affbc"
+  (let [commit "9c405c9f9a7cfd23511fd6b2de05dc72481119b4"
         lib-files (prep-llama commit )
         deploy-info (jar-llama commit
                                lib-files)]
