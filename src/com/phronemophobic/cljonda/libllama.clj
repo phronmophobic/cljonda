@@ -190,7 +190,7 @@
   (deploy-llama "c3f197912f1ce858ac114d70c40db512de02e2e0")
   (-main "c3f197912f1ce858ac114d70c40db512de02e2e0")
 
-  (let [commit "9c405c9f9a7cfd23511fd6b2de05dc72481119b4"
+  (let [commit "b2291"
         lib-files (prep-llama commit )
         deploy-info (jar-llama commit
                                lib-files)]
