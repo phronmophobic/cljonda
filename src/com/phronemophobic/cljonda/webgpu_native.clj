@@ -1,4 +1,4 @@
-(ns com.phronemophobic.cljonda.libwebgpu-native
+(ns com.phronemophobic.cljonda.webgpu-native
   (:require [clojure.java.shell :as sh]
             [clojure.tools.build.api :as b]
             [clojure.java.io :as io]
@@ -25,7 +25,7 @@
 (defn sanitize-version [version]
   (str/replace version #"[^a-zA-Z0-9+_.]" "_"))
 
-(defn create-cljonda-jar [package-name version lib-files ]
+(defn create-cljonda-jar [target package-name version lib-files ]
   (let [jar-file (io/file
                   build-dir
                   (str package-name ".jar"))
@@ -35,7 +35,7 @@
           (.mkdirs))
 
         target-dir (io/file package-build-dir
-                            (cljonda/system-arch))]
+                            (:system-arch target))]
     (try
       ;; copy dylibs to the right spot
       (doseq [f lib-files
@@ -47,7 +47,7 @@
                       :target target-path}))
 
       ;; src dir with namespace
-      (let [lib (symbol "com.phronemophobic.cljonda" (str package-name "-" (cljonda/system-arch)))
+      (let [lib (symbol "com.phronemophobic.cljonda" (str package-name "-" (:system-arch target)))
             class-dir (.getAbsolutePath package-build-dir)]
         (b/write-pom {:lib lib
                       :pom-data
@@ -101,19 +101,13 @@
 
 ;; https://github.com/gfx-rs/wgpu-native/releases/download/v0.19.4.1/wgpu-macos-x86_64-release.zip
 
-(defn prep-webgpu-native [version]
+(defn prep-webgpu-native [target version]
   (delete-tree build-dir true)
   (doto (io/file build-dir)
     (.mkdirs))
   (let [
-        platform (case (cljonda/os)
-                   "linux" "linux"
-                   "darwin" "macos")
-        arch (case (cljonda/arch)
-               "x86-64" "x86_64"
-               "aarch64" "aarch64")
 
-        url (str "https://github.com/gfx-rs/wgpu-native/releases/download/"version "/wgpu-" platform "-" arch "-release.zip")
+        url (str "https://github.com/gfx-rs/wgpu-native/releases/download/"version "/wgpu-" (:url-platform target) "-release.zip")
         zip-file (io/file build-dir "release.zip")
         release (io/file build-dir "release")]
     (with-open [is (io/input-stream (io/as-url url))
@@ -122,8 +116,9 @@
     (fs/unzip zip-file release)
     [(io/file release (str "libwgpu_native." (cljonda/shared-lib-suffix)))]))
 
-(defn jar-webgpu-native [version lib-files]
-  (create-cljonda-jar  "webgpu-native"
+(defn jar-webgpu-native [target version lib-files]
+  (create-cljonda-jar target
+                      "webgpu-native"
                        version
                        lib-files)
 )
@@ -136,12 +131,15 @@
 
 (defn -main [version]
   (try
-
-    (let [lib-files (prep-webgpu-native version)
-          version (str version "-SNAPSHOT")
-          deploy-info (jar-webgpu-native version
-                                         lib-files)]
-      #_(deploy-jar-pom deploy-info))
+    (doseq [target [{:system-arch "linux-x86-64" :shared-lib-suffix "so" :os "linux" :url-platform "linux-x86_64"}
+                    {:system-arch "darwin-x86-64" :shared-lib-suffix "dylib" :os "darwin" :url-platform "macos-x86_64"}
+                    {:system-arch "darwin-aarch64" :shared-lib-suffix "dylib" :os "darwin" :url-platform "macos-aarch64"}]]
+      (let [lib-files (prep-webgpu-native target version)
+            version (str version "-SNAPSHOT")
+            deploy-info (jar-webgpu-native target
+                                           version
+                                           lib-files)]
+        (deploy-jar-pom deploy-info)))
     (catch clojure.lang.ExceptionInfo e
       (let [data (ex-data e)]
         (case (:type data)
