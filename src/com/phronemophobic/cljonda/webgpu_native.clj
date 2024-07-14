@@ -114,7 +114,7 @@
                 os (io/output-stream zip-file)]
       (io/copy is os))
     (fs/unzip zip-file release)
-    [(io/file release (str "libwgpu_native." (cljonda/shared-lib-suffix)))]))
+    [(io/file release (str "libwgpu_native." (:shared-lib-suffix target)))]))
 
 (defn jar-webgpu-native [target version lib-files]
   (create-cljonda-jar target
