@@ -135,7 +135,7 @@
                     {:system-arch "darwin-x86-64" :shared-lib-suffix "dylib" :os "darwin" :url-platform "macos-x86_64"}
                     {:system-arch "darwin-aarch64" :shared-lib-suffix "dylib" :os "darwin" :url-platform "macos-aarch64"}]]
       (let [lib-files (prep-webgpu-native target version)
-            version (str version "-SNAPSHOT")
+            version (str version #_"-SNAPSHOT")
             deploy-info (jar-webgpu-native target
                                            version
                                            lib-files)]
