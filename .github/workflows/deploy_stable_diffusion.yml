@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
 
 env:
-  commit: "9c51d8787f78ef1bd0ead1e8f48b766d7ee7484d"
+  commit: "58d54738e26c9b793478c3aceafbbee0acf29405"
 
 jobs:
   deploy:
