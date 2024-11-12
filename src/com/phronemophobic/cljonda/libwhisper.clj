@@ -164,7 +164,9 @@
 (defn -main [commit]
   (try
     (let [lib-files (prep-whisper commit)
-          version (str commit "-SNAPSHOT")
+          version (str commit
+                       ;; "-SNAPSHOT"
+                       )
           deploy-info (jar-whisper version
                                  lib-files)]
       (deploy-jar-pom deploy-info))
