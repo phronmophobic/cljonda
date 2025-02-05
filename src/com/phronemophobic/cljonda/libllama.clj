@@ -169,7 +169,7 @@
 (defn -main [commit]
   (try
     (let [lib-files (prep-llama commit)
-          version (str commit "-SNAPSHOT")
+          version (str commit #_"-SNAPSHOT")
           deploy-info (jar-llama version
                                  lib-files)]
       (deploy-jar-pom deploy-info))
