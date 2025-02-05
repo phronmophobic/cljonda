@@ -141,7 +141,18 @@
           ;; linux
           (assert-sh "patchelf" "--set-soname" (.getName target-file) (.getName target-file)
                      :dir (.getParentFile target-file)))
-        [target-file]))))
+
+        (let [ggml-libs (into []
+                              (comp
+                               (map (fn [libname]
+                                      (io/file cpp-build-dir "bin" (str "lib" libname "." (cljonda/shared-lib-suffix)))))
+                               (filter #(.exists %)))
+                              ["ggml"
+                               "ggml-cpu"
+                               "ggml-blas"
+                               "ggml-metal"
+                               "ggml-base"])]
+          (into [target-file] ggml-libs))))))
 
 (defn jar-llama [version lib-files]
   (create-cljonda-jar  "llama-cpp-gguf"
