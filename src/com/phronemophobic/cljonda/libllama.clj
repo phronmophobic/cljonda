@@ -111,7 +111,7 @@
                 {})]
       (if (= "darwin" (cljonda/os))
         ;; macosx, add metal
-        (assert-sh "cmake" "-DBUILD_SHARED_LIBS=ON" "-DLLAMA_METAL_EMBED_LIBRARY=ON" ".."
+        (assert-sh "cmake" "-DBUILD_SHARED_LIBS=ON" "-DGGML_METAL_EMBED_LIBRARY=ON" ".."
                    :env env
                    :dir cpp-build-dir)
         ;; linux
@@ -132,7 +132,7 @@
 
       (let [target-file (io/file lib-dir (str "libllama-gguf." (cljonda/shared-lib-suffix)))
             target-path (.getCanonicalPath target-file) ]
-        (b/copy-file {:src (.getCanonicalPath (io/file cpp-build-dir (str "libllama." (cljonda/shared-lib-suffix)))) 
+        (b/copy-file {:src (.getCanonicalPath (io/file cpp-build-dir "bin" (str "libllama." (cljonda/shared-lib-suffix))))
                       :target target-path})
         ;; update install name/so name
         (if (= "darwin" (cljonda/os))
@@ -158,7 +158,7 @@
 (defn -main [commit]
   (try
     (let [lib-files (prep-llama commit)
-          version (str commit #_"-SNAPSHOT")
+          version (str commit "-SNAPSHOT")
           deploy-info (jar-llama version
                                  lib-files)]
       (deploy-jar-pom deploy-info))
@@ -190,7 +190,7 @@
   (deploy-llama "c3f197912f1ce858ac114d70c40db512de02e2e0")
   (-main "c3f197912f1ce858ac114d70c40db512de02e2e0")
 
-  (let [commit "b3040"
+  (let [commit "b4634"
         lib-files (prep-llama commit )
         deploy-info (jar-llama commit
                                lib-files)]
