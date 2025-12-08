@@ -23,9 +23,14 @@ jobs:
       build_type: ${{ matrix.build_type }}
     steps:
       - uses: actions/checkout@v2
-      - name: Install packages
+      - name: Install packages Linux
         if: matrix.os == 'ubuntu-latest'
         run: sudo apt-get update -y && sudo apt-get install patchelf -y
+      - name: Install packages on macOS
+        if: runner.os == 'macOS'
+        run: |
+          brew update
+          brew install make cmake
       - name: Setup Java
         uses: actions/setup-java@v2
         with:
