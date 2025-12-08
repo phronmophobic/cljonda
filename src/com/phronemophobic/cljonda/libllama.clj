@@ -165,10 +165,10 @@
                                lib-files)]
     (deploy-jar-pom deploy-info)))
 
-(defn -main [commit]
+(defn -main [commit subversion]
   (try
     (let [lib-files (prep-llama commit)
-          version (str commit #_"-SNAPSHOT")
+          version (str commit subversion)
           deploy-info (jar-llama version
                                  lib-files)]
       (deploy-jar-pom deploy-info))

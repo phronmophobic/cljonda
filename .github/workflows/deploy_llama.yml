@@ -4,6 +4,7 @@ on:
 
 env:
   commit: "b7325"
+  subversion: "-2"
 
 jobs:
   deploy:
@@ -49,5 +50,5 @@ jobs:
         env:
           CLOJARS_USERNAME: ${{ secrets.CLOJARS_USERNAME }}
           CLOJARS_PASSWORD: ${{ secrets.CLOJARS_PASSWORD }}
-        run: clojure -M:project -m com.phronemophobic.cljonda.libllama ${{ env.commit }}
+        run: clojure -M:project -m com.phronemophobic.cljonda.libllama ${{ env.commit }} ${{ env.subversion }}
 
