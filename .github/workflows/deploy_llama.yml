@@ -31,6 +31,7 @@ jobs:
         run: |
           brew update
           brew install make cmake
+          echo "$(brew --prefix make)/libexec/gnubin" >> "$GITHUB_PATH"
       - name: Setup Java
         uses: actions/setup-java@v2
         with:
