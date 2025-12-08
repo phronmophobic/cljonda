@@ -111,7 +111,7 @@
                 {})]
       (if (= "darwin" (cljonda/os))
         ;; macosx, add metal
-        (assert-sh "cmake" "-DBUILD_SHARED_LIBS=ON" "-DGGML_METAL_EMBED_LIBRARY=ON" ".."
+        (assert-sh "cmake" "-DBUILD_SHARED_LIBS=ON" "-DGGML_METAL_EMBED_LIBRARY=ON" "-DLLAMA_CURL=OFF" ".."
                    :env env
                    :dir cpp-build-dir)
         ;; linux
