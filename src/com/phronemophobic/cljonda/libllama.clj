@@ -37,7 +37,6 @@
     (try
       ;; copy dylibs to the right spot
       (doseq [f lib-files
-              :when (not (Files/isSymbolicLink (.toPath f)))
               :let [target-file (io/file target-dir
                                          (.getName f))
                     target-path (.getAbsolutePath target-file)]]
