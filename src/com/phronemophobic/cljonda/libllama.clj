@@ -115,7 +115,7 @@
                    :env env
                    :dir cpp-build-dir)
         ;; linux
-        (let [flags ["-DBUILD_SHARED_LIBS=ON"]
+        (let [flags ["-DBUILD_SHARED_LIBS=ON" "-DLLAMA_CURL=OFF"]
               args (into []
                          cat
                          [["cmake"]
