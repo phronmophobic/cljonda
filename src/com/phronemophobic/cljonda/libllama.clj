@@ -141,16 +141,20 @@
           (assert-sh "patchelf" "--set-soname" (.getName target-file) (.getName target-file)
                      :dir (.getParentFile target-file)))
 
-        (let [ggml-libs (into []
+        (let [lib-suffix (cljonda/shared-lib-suffix)
+              ggml-libs (into []
                               (comp
                                (map (fn [libname]
-                                      (io/file cpp-build-dir "bin" (str "lib" libname "." (cljonda/shared-lib-suffix)))))
+                                      (io/file cpp-build-dir "bin" (str "lib" libname "."
+                                                                        (if (= lib-suffix "so")
+                                                                          (str lib-suffix ".0")
+                                                                          (str "0." lib-suffix))))))
                                (filter #(.exists %)))
-                              ["ggml.0"
-                               "ggml-cpu.0"
-                               "ggml-blas.0"
-                               "ggml-metal.0"
-                               "ggml-base.0"])]
+                              ["ggml"
+                               "ggml-cpu"
+                               "ggml-blas"
+                               "ggml-metal"
+                               "ggml-base"])]
           (into [target-file] ggml-libs))))))
 
 (defn jar-llama [version lib-files]
