@@ -148,20 +148,20 @@
                               :dir lib-dir]]
           (apply assert-sh make-dylib-cmd))
         ;; else linux
-        (let [make-so-command ["g++"
-                               "-shared"
-                               "-Wl,-soname,libllama-gguf.so"
-                               "-o"
-                               "libllama-gguf.so"
-                               "-Wl,--whole-archive"
-                               "build/src/libllama.a"
-                               "build/ggml/src/libggml.a"
-                               "build/ggml/src/libggml-base.a"
-                               "build/ggml/src/libggml-cpu.a"
-                               "-Wl,--no-whole-archive"
-                               "-lgomp"
-                               :dir lib-dir]]
-          (apply assert-sh make-dylib-cmd)))
+        (let [make-so-cmd ["g++"
+                           "-shared"
+                           "-Wl,-soname,libllama-gguf.so"
+                           "-o"
+                           "libllama-gguf.so"
+                           "-Wl,--whole-archive"
+                           "build/src/libllama.a"
+                           "build/ggml/src/libggml.a"
+                           "build/ggml/src/libggml-base.a"
+                           "build/ggml/src/libggml-cpu.a"
+                           "-Wl,--no-whole-archive"
+                           "-lgomp"
+                           :dir lib-dir]]
+          (apply assert-sh make-so-cmd)))
 
 
       
