@@ -146,11 +146,11 @@
                                (map (fn [libname]
                                       (io/file cpp-build-dir "bin" (str "lib" libname "." (cljonda/shared-lib-suffix)))))
                                (filter #(.exists %)))
-                              ["ggml"
-                               "ggml-cpu"
-                               "ggml-blas"
-                               "ggml-metal"
-                               "ggml-base"])]
+                              ["ggml.0"
+                               "ggml-cpu.0"
+                               "ggml-blas.0"
+                               "ggml-metal.0"
+                               "ggml-base.0"])]
           (into [target-file] ggml-libs))))))
 
 (defn jar-llama [version lib-files]
