@@ -110,11 +110,11 @@
                 {})]
       (if (= "darwin" (cljonda/os))
         ;; macosx, add metal
-        (assert-sh "cmake" "-DBUILD_SHARED_LIBS=ON" "-DGGML_METAL_EMBED_LIBRARY=ON" "-DLLAMA_CURL=OFF" ".."
+        (assert-sh "cmake" "-DLLAMA_STATIC=ON" "-DGGML_STATIC=ON" "-DGGML_METAL_EMBED_LIBRARY=ON" "-DLLAMA_CURL=OFF" "-DLLAMA_BUILD_COMMON=OFF" "-DBUILD_SHARED_LIBS=OFF" ".."
                    ;; :env env
                    :dir cpp-build-dir)
         ;; linux
-        (let [flags ["-DBUILD_SHARED_LIBS=ON" "-DLLAMA_CURL=OFF"]
+        (let [flags ["-DLLAMA_STATIC=ON" "-DGGML_STATIC=ON" "-DLLAMA_CURL=OFF" "-DLLAMA_BUILD_COMMON=OFF" "-DBUILD_SHARED_LIBS=OFF" "-DCMAKE_POSITION_INDEPENDENT_CODE=ON" ".."]
               args (into []
                          cat
                          [["cmake"]
@@ -127,35 +127,46 @@
       (assert-sh "cmake" "--build" "." "--config" "Release"
                  ;; :env env
                  :dir cpp-build-dir)
+
+      ;; combine static libraries into single shared lib
+      ;; named llama-gguf
+      (if (= "darwin" (cljonda/os))
+        (let [make-dylib-cmd ["clang++"
+                              "-dynamiclib"
+                              "-o" "libllama-gguf.dylib" 
+                              "-install_name" "libllama-gguf.dylib" 
+                              "-Wl,-force_load,build/src/libllama.a"
+                              "-Wl,-force_load,build/ggml/src/libggml.a"
+                              "-Wl,-force_load,build/ggml/src/libggml-base.a"
+                              "-Wl,-force_load,build/ggml/src/ggml-blas/libggml-blas.a"
+                              "-Wl,-force_load,build/ggml/src/libggml-cpu.a"
+                              "-Wl,-force_load,build/ggml/src/ggml-metal/libggml-metal.a"
+                              "-framework" "Accelerate"
+                              "-framework" "Metal"
+                              "-framework" "MetalKit"
+                              "-framework" "Foundation"
+                              :dir lib-dir]]
+          (apply assert-sh make-dylib-cmd))
+        ;; else linux
+        (let [make-so-command ["g++"
+                               "-shared"
+                               "-Wl,-soname,libllama-gguf.so"
+                               "-o"
+                               "libllama-gguf.so"
+                               "-Wl,--whole-archive"
+                               "build/src/libllama.a"
+                               "build/ggml/src/libggml.a"
+                               "build/ggml/src/libggml-base.a"
+                               "build/ggml/src/libggml-cpu.a"
+                               "-Wl,--no-whole-archive"
+                               "-lgomp"
+                               :dir lib-dir]]
+          (apply assert-sh make-dylib-cmd)))
+
+
       
 
-      (let [target-file (io/file lib-dir (str "libllama-gguf." (cljonda/shared-lib-suffix)))
-            target-path (.getCanonicalPath target-file) ]
-        (b/copy-file {:src (.getCanonicalPath (io/file cpp-build-dir "bin" (str "libllama." (cljonda/shared-lib-suffix))))
-                      :target target-path})
-        ;; update install name/so name
-        (if (= "darwin" (cljonda/os))
-          (assert-sh "install_name_tool" "-id" (.getName target-file) (.getName target-file)
-                     :dir (.getParentFile target-file))
-          ;; linux
-          (assert-sh "patchelf" "--set-soname" (.getName target-file) (.getName target-file)
-                     :dir (.getParentFile target-file)))
-
-        (let [lib-suffix (cljonda/shared-lib-suffix)
-              ggml-libs (into []
-                              (comp
-                               (map (fn [libname]
-                                      (io/file cpp-build-dir "bin" (str "lib" libname "."
-                                                                        (if (= lib-suffix "so")
-                                                                          (str lib-suffix ".0")
-                                                                          (str "0." lib-suffix))))))
-                               (filter #(.exists %)))
-                              ["ggml"
-                               "ggml-cpu"
-                               "ggml-blas"
-                               "ggml-metal"
-                               "ggml-base"])]
-          (into [target-file] ggml-libs))))))
+      [(io/file lib-dir (str "libllama-gguf." (cljonda/shared-lib-suffix)))])))
 
 (defn jar-llama [version lib-files]
   (create-cljonda-jar  "llama-cpp-gguf"
