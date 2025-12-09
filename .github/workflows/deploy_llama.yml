@@ -14,9 +14,9 @@ jobs:
         include:
           - os: "ubuntu-latest"
             arch: "x64"
-          - os: "macos-15"
+          - os: "macos-14"
             arch: "aarch64"
-          - os: "macos-latest"
+          - os: "macos-14
             arch: "x64"
       fail-fast: false
     runs-on: ${{ matrix.os }}
