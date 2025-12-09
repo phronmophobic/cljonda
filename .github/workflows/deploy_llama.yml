@@ -4,7 +4,7 @@ on:
 
 env:
   commit: "b7325"
-  subversion: "-3
+  subversion: "-3"
 
 jobs:
   deploy:
