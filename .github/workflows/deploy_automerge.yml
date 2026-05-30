@@ -29,7 +29,10 @@ jobs:
       - uses: actions/checkout@v6.0.2
       - name: Install packages
         if: matrix.osname == 'ubuntu'
-        run: sudo apt-get update -y && sudo apt-get install patchelf cmocka-doc libcmocka-dev -y
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install patchelf cmocka-doc libcmocka-dev -y
+          rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu
       - name: Install build dependencies
         if: matrix.osname == 'macos'
         run: |
