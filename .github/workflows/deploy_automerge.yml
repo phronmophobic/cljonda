@@ -5,8 +5,7 @@ on:
 env:
   commit: "a11222254d2f86ec9df0738e7002f15a930fe9b4"
 
-          # - os: "ubuntu-latest"
-          #   arch: "x64"
+
           # - os: "macos-latest"
           #   arch: "x64"
 
@@ -17,8 +16,11 @@ jobs:
       matrix:
         include:
           - os: "macos-14"
+            osname: "macos"
             arch: "aarch64"
-
+          - os: "ubuntu-latest"
+            osname: "ubuntu
+            arch: "x64"
       fail-fast: false
     runs-on: ${{ matrix.os }}
     env:
@@ -26,8 +28,13 @@ jobs:
     steps:
       - uses: actions/checkout@v6.0.2
       - name: Install packages
-        if: matrix.os == 'ubuntu-latest'
-        run: sudo apt-get update -y && sudo apt-get install patchelf -y
+        if: matrix.os == 'ubuntu'
+        run: sudo apt-get update -y && sudo apt-get install patchelf cmocka-doc libcmocka-dev -y
+      - name: Install build dependencies
+        if: matrix.osname == 'macos'
+        run: |
+          brew install cmocka
+          rustup component add rust-src --toolchain nightly-aarch64-apple-darwin
       - name: Setup Java
         uses: actions/setup-java@v5.2.0
         with:
@@ -41,11 +48,6 @@ jobs:
           cli: 1.12.5.1654 # Clojure CLI based on tools.deps
       - name: Install dependencies
         run: clojure -P
-      - name: Install build dependencies
-        if: matrix.os == 'macos-14'
-        run: |
-          brew install cmocka
-          rustup component add rust-src --toolchain nightly-aarch64-apple-darwin
       - name: Deploy
         env:
           CLOJARS_USERNAME: ${{ secrets.CLOJARS_USERNAME }}
