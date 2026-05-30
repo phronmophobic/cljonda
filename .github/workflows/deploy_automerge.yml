@@ -19,7 +19,7 @@ jobs:
             osname: "macos"
             arch: "aarch64"
           - os: "ubuntu-latest"
-            osname: "ubuntu
+            osname: "ubuntu"
             arch: "x64"
       fail-fast: false
     runs-on: ${{ matrix.os }}
