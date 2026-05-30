@@ -5,18 +5,20 @@ on:
 env:
   commit: "a11222254d2f86ec9df0738e7002f15a930fe9b4"
 
+          # - os: "ubuntu-latest"
+          #   arch: "x64"
+          # - os: "macos-latest"
+          #   arch: "x64"
+
 jobs:
   deploy:
     environment: Actions
     strategy:
       matrix:
         include:
-          - os: "ubuntu-latest"
-            arch: "x64"
           - os: "macos-14"
             arch: "aarch64"
-          - os: "macos-latest"
-            arch: "x64"
+
       fail-fast: false
     runs-on: ${{ matrix.os }}
     env:
@@ -40,7 +42,10 @@ jobs:
       - name: Install dependencies
         run: clojure -P
       - name: Install build dependencies
-        run: brew install cmocka
+        if: matrix.os == 'macos-14'
+        run: |
+          brew install cmocka
+          rustup component add rust-src --toolchain nightly-aarch64-apple-darwin
       - name: Deploy
         env:
           CLOJARS_USERNAME: ${{ secrets.CLOJARS_USERNAME }}
