@@ -39,6 +39,8 @@ jobs:
           cli: 1.12.5.1654 # Clojure CLI based on tools.deps
       - name: Install dependencies
         run: clojure -P
+      - name: Install build dependencies
+        run: brew install cmocka
       - name: Deploy
         env:
           CLOJARS_USERNAME: ${{ secrets.CLOJARS_USERNAME }}
