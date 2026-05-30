@@ -28,7 +28,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6.0.2
       - name: Install packages
-        if: matrix.os == 'ubuntu'
+        if: matrix.osname == 'ubuntu'
         run: sudo apt-get update -y && sudo apt-get install patchelf cmocka-doc libcmocka-dev -y
       - name: Install build dependencies
         if: matrix.osname == 'macos'
