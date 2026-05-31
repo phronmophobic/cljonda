@@ -148,7 +148,7 @@
   (try
     (let [lib-files (prep-automerge commit)
           version (str commit
-                       "-SNAPSHOT"
+                       ;; "-SNAPSHOT"
                        )
           deploy-info (jar-automerge version
                                  lib-files)]
